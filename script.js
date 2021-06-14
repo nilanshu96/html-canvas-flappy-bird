@@ -64,19 +64,36 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     function draw() {
 
-        /* Background */
+        /* BACKGROUND */
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, BG_DAY_X, BG_DAY_Y, BG_WIDTH, BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
-        bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat");;
-        bgCtx.fillRect(dx, 0, backgroundCanvas.width, backgroundCanvas.height);
+
+        bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
+
+        bgCtx.fillRect(dx, 0, backgroundCanvas.width, backgroundCanvas.height); //stars drawing a rectangle from (dx,0) position of canvas
+        //the dx also represents the x starting point from where the pattern would be drawn. Hence the pattern appears moving.
+        //the pattern used in fillStyle never moves. fillRect here takes a rectangular part from the pattern from (dx,0) location of pattern of size canvas width and height.
+       
         bgCtx.translate(-TRANSLATE_SPEED, 0); //here canvas is gradually moving left on x-axis due to the negative translate
         dx += TRANSLATE_SPEED; //dx is added equal to the translate speed because the x origin or the zero point of x axis has moved left by translate speed
         //in simple words the the x origin has moved left of the screen due to negative translate which is not inside the canvas hence not visible anymore
         //therefore we add the translate speed to dx to draw the pattern from the point where the canvas screen starts or the point from where the canvas becomes visible
 
-        /* Game */
+
+        /* GAME */
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        /*drawImage params 
+            image - png, jpg, canvas etc,
+            x_pos_in_img - represents the x position inside the image file from where the drawing would begin
+            y_pos_in_img - same as above but for y axis,
+            width_in_img - width of the section withing the image file which would be drawn in canvas
+            height_in_img - same as above but for height,
+            x_pos_canvas - x position in canvas,
+            y_pos_canvas - y position in canvas,
+            width_in_canvas - width of the image withing the canvas, this width property can be used to scale the section of the image being drawn
+            height_in_canvas - same as above but for height
+        */
         ctx.drawImage(sprite, GREEN_PIPE_X, GREEN_PIPE_Y, GREEN_PIPE_WIDTH, GREEN_PIPE_HEIGHT, 0, 400, GREEN_PIPE_WIDTH * SPRITE_SCALE, GREEN_PIPE_HEIGHT * SPRITE_SCALE);
         ctx.drawImage(sprite, RED_BIRD[birdFrameCnt].x, RED_BIRD[birdFrameCnt].y, BIRD_WIDTH, BIRD_HEIGHT, 100, 200, BIRD_WIDTH * SPRITE_SCALE, BIRD_HEIGHT * SPRITE_SCALE);
 
