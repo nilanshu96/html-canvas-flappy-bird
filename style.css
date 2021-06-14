@@ -1,3 +1,30 @@
-#canvas {
+body, html {
+    padding: 0;
+    margin: 0;
+}
+
+main {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.game-container {
+    position: relative;
     border: 1px solid black;
+    width: 512px;
+    height: 512px;
+    align-self: center;
+}
+
+#background-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
