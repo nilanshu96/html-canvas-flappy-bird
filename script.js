@@ -9,6 +9,8 @@ let pipe_dx = 2;
 let score = 0;
 let enemyId = 0;
 
+const HIT_BOX_MARGIN = 15; //used to decrease the enemy hit box for better gameplay
+
 // bird Coordiantes
 const birdX = 100;
 let birdY = 200; //y coordinate will change on clicking
@@ -37,7 +39,7 @@ const groundCanvasX = 0;
 const groundCanvasY = canvas.height - groundCanvasHeight / 2;
 
 /* pipes */
-const PIPE_GAP = 100;
+const PIPE_GAP = 110;
 
 const PIPE_WIDTH = 26;
 const PIPE_HEIGHT = 160;
@@ -127,8 +129,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         const enemy_yup_bottom = enemy_yup + PIPE_HEIGHT * SPRITE_SCALE;
 
-        if ((birdX + BIRD_WIDTH >= enemy_x) && (birdX <= enemy_x + PIPE_WIDTH)) {
-            if ((birdY >= enemy_yup_bottom) && (birdY + BIRD_HEIGHT <= enemy_ydown)) {
+        if ((birdX + BIRD_WIDTH * SPRITE_SCALE >= enemy_x + HIT_BOX_MARGIN) && (birdX <= enemy_x + PIPE_WIDTH * SPRITE_SCALE - HIT_BOX_MARGIN)) {
+            if ((birdY >= enemy_yup_bottom - HIT_BOX_MARGIN) && (birdY + BIRD_HEIGHT * SPRITE_SCALE <= enemy_ydown + HIT_BOX_MARGIN)) {
                 return false;
             } else {
                 return true;
