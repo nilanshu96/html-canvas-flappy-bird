@@ -1,12 +1,18 @@
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
 
-const TRANSLATE_SPEED = 1;
+let translateSpeed = 1;
 const pipes = [];
+let pipe_dx = 2;
+
+// Scoring
+let score = 0;
+let enemyId = 0;
 
 // bird Coordiantes
 const birdX = 100;
 let birdY = 200; //y coordinate will change on clicking
+let birdY_dx = 50; //distance by which bird coordinate will change
 
 /*Sprite Constants and Dimensions*/
 const SPRITE_SRC = "./assets/flappy-sprite.png";
@@ -76,7 +82,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.drawImage(sprite, GREEN_PIPE_DOWN_X, GREEN_PIPE_DOWN_Y, PIPE_WIDTH, PIPE_HEIGHT, x_down, y_down, PIPE_WIDTH * SPRITE_SCALE, PIPE_HEIGHT * SPRITE_SCALE)
     }
 
-    function getNewPipePairCoordinates() {
+    function getNewPipePair() {
         const high = -PIPE_GAP - groundClearance;
         const low = -PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP;
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
@@ -84,20 +90,57 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP };
     }
 
+    function resetMovements() {
+        pipe_dx = 2;
+        birdY_dx = 50;
+        translateSpeed = 1;
+    }
+
+    function stopAllMovements() {
+        pipe_dx = 0;
+        birdY_dx = 0;
+        translateSpeed = 0;
+    }
+
     function managePipes() {
 
+
         for (let i = 0; i < pipes.length; i++) {
+            if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
+                stopAllMovements();
+            }
             drawPipePair(pipes[i]);
-            pipes[i].x_up -= 2;
-            pipes[i].x_down -= 2;
+            pipes[i].x_up -= pipe_dx;
+            pipes[i].x_down -= pipe_dx;
         }
 
         if (pipes[pipes.length - 1].x_up <= canvas.width / 2) {
-            pipes.push(getNewPipePairCoordinates());
+            pipes.push(getNewPipePair());
         }
 
         if (pipes[0].x_up <= -PIPE_WIDTH * SPRITE_SCALE) {
             pipes.shift();
+        }
+    }
+
+    function checkCollision(enemy_x, enemy_yup, enemy_ydown) {
+
+        const enemy_yup_bottom = enemy_yup + PIPE_HEIGHT * SPRITE_SCALE;
+
+        if ((birdX + BIRD_WIDTH >= enemy_x) && (birdX <= enemy_x + PIPE_WIDTH)) {
+            if ((birdY >= enemy_yup_bottom) && (birdY + BIRD_HEIGHT <= enemy_ydown)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function checkGroundCollision() {
+        if (birdY + BIRD_HEIGHT * SPRITE_SCALE >= groundCanvasY) {
+            stopAllMovements();
         }
     }
 
@@ -117,7 +160,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
 
-    pipes.push(getNewPipePairCoordinates());
+    pipes.push(getNewPipePair());
 
     function draw() {
 
@@ -132,8 +175,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         //the bg_dx also represents the x starting point from where the pattern would be drawn. Hence the pattern appears moving.
         //the pattern used in fillStyle never moves. fillRect here takes a rectangular part from the pattern from (bg_dx,0) location of pattern of size canvas width and height.
 
-        bgCtx.translate(-TRANSLATE_SPEED, 0); //here canvas is gradually moving left on x-axis due to the negative translate
-        bg_dx += TRANSLATE_SPEED; //bg_dx is added equal to the translate speed because the x origin or the zero point of x axis has moved left by translate speed
+        bgCtx.translate(-translateSpeed, 0); //here canvas is gradually moving left on x-axis due to the negative translate
+        bg_dx += translateSpeed; //bg_dx is added equal to the translate speed because the x origin or the zero point of x axis has moved left by translate speed
         //in simple words the the x origin has moved left of the screen due to negative translate which is not inside the canvas hence not visible anymore
         //therefore we add the translate speed to bg_dx to draw the pattern from the point where the canvas screen starts or the point from where the canvas becomes visible
 
@@ -153,18 +196,18 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         */
 
 
-
+        checkGroundCollision();
         managePipes();
         ctx.drawImage(sprite, GROUND_X, GROUND_Y, GROUND_WIDTH, GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
         ctx.drawImage(sprite, RED_BIRD[birdFrameCnt].x, RED_BIRD[birdFrameCnt].y, BIRD_WIDTH, BIRD_HEIGHT, birdX, birdY, BIRD_WIDTH * SPRITE_SCALE, BIRD_HEIGHT * SPRITE_SCALE);
         // pipe_dx -= 2;
-        birdY += 1;
+        birdY += 2;
         birdY = Math.min(canvas.height - groundClearance - BIRD_HEIGHT * SPRITE_SCALE, birdY);
         requestAnimationFrame(draw);
     }
 
     canvas.onclick = () => {
-        birdY -= 50;
+        birdY -= birdY_dx;
     }
 
 
