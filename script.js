@@ -98,7 +98,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         const low = -PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP;
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
-        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP };
+        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP, crossed: false };
     }
 
     function initializeGame() {
@@ -122,6 +122,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
                 stopGame();
+            } else if(!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
+                score++;
+                console.log(score);
+                pipes[i].crossed = true;
             }
             drawPipePair(pipes[i]);
             pipes[i].x_up -= pipe_dx;
@@ -151,6 +155,13 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         } else {
             return false;
         }
+    }
+
+    function checkPipeCrossed(enemy_x) {
+        if( (birdX < enemy_x + PIPE_WIDTH * SPRITE_SCALE) && (birdX + BIRD_WIDTH * SPRITE_SCALE > enemy_x + PIPE_WIDTH *SPRITE_SCALE) ) {
+            return true;
+        }
+        return false;
     }
 
     //checks the collision between bird and ground
