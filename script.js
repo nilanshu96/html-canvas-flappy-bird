@@ -1,9 +1,18 @@
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
 
+// GAME STATES
+const START = "start";
+const GAME = "game";
+const FINISH = "finish";
+
+let currentState = START;
+
 let translateSpeed = 1;
 const pipes = [];
 let pipe_dx = 2;
+
+let birdWingsInterval;
 
 // Scoring
 let score = 0;
@@ -73,7 +82,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     // function to help change the bird frame being used from the sprite by changing the frame count 
     // at a slower speed than requestAnimationFrame()
     function birdAnimationHelper() {
-        setInterval(() => {
+        birdWingsInterval = setInterval(() => {
             birdFrameCnt++;
             birdFrameCnt = birdFrameCnt % BIRD_FRAMES;
         }, 90);
@@ -92,24 +101,27 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP };
     }
 
-    function resetMovements() {
+    function initializeGame() {
         pipe_dx = 2;
         birdY_dx = 50;
         translateSpeed = 1;
+        canvas.addEventListener("click", birdJump);
+        birdAnimationHelper()
     }
 
-    function stopAllMovements() {
+    //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
+    function stopGame() {
         pipe_dx = 0;
         birdY_dx = 0;
         translateSpeed = 0;
+        canvas.removeEventListener("click", birdJump);
+        clearInterval(birdWingsInterval);
     }
 
     function managePipes() {
-
-
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
-                stopAllMovements();
+                stopGame();
             }
             drawPipePair(pipes[i]);
             pipes[i].x_up -= pipe_dx;
@@ -125,6 +137,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //A simple collision checker to see if the bird is colliding with a pipe
     function checkCollision(enemy_x, enemy_yup, enemy_ydown) {
 
         const enemy_yup_bottom = enemy_yup + PIPE_HEIGHT * SPRITE_SCALE;
@@ -140,9 +153,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //checks the collision between bird and ground
     function checkGroundCollision() {
         if (birdY + BIRD_HEIGHT * SPRITE_SCALE >= groundCanvasY) {
-            stopAllMovements();
+            stopGame();
         }
     }
 
@@ -208,10 +222,11 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         requestAnimationFrame(draw);
     }
 
-    canvas.onclick = () => {
+
+    function birdJump() {
         birdY -= birdY_dx;
     }
-
+    canvas.addEventListener("click", birdJump);
 
     draw();
 }
