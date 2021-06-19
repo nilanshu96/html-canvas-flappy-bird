@@ -1,12 +1,9 @@
+import * as constants from './modules/constants.mjs';
+
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
 
-// GAME STATES
-const START = "start";
-const GAME = "game";
-const FINISH = "finish";
-
-let currentState = START;
+let currentState = constants.START;
 
 let translateSpeed = 1;
 const pipes = [];
@@ -18,64 +15,22 @@ let birdWingsInterval;
 let score = 0;
 let enemyId = 0;
 
-const HIT_BOX_MARGIN = 15; //used to decrease the enemy hit box for better gameplay
-
 // bird Coordiantes
 const birdX = 100;
 let birdY = 200; //y coordinate will change on clicking
 let birdY_dx = 50; //distance by which bird coordinate will change
 
-/*Sprite Constants and Dimensions*/
-const SPRITE_SRC = "./assets/flappy-sprite.png";
-const SPRITE_SCALE = 3;
-
-/* background */
-const BG_DAY_X = 0;
-const BG_DAY_Y = 0;
-const BG_WIDTH = 142;
-const BG_HEIGHT = 256;
-
-/* Ground */
-const GROUND_X = 292;
-const GROUND_Y = 0;
-const GROUND_WIDTH = 168;
-const GROUND_HEIGHT = 56;
-
 const groundCanvasWidth = canvas.width;
-const groundCanvasHeight = Math.floor((GROUND_HEIGHT / GROUND_WIDTH) * groundCanvasWidth);
+const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
 const groundClearance = groundCanvasHeight / 2; //part of ground that would appear on canvas
 const groundCanvasX = 0;
 const groundCanvasY = canvas.height - groundCanvasHeight / 2;
-
-/* pipes */
-const PIPE_GAP = 110;
-
-const PIPE_WIDTH = 26;
-const PIPE_HEIGHT = 160;
-
-const GREEN_PIPE_UP_X = 56;
-const GREEN_PIPE_UP_Y = 323;
-
-const GREEN_PIPE_DOWN_X = 84;
-const GREEN_PIPE_DOWN_Y = 323;
-
-/* birds */
-const BIRD_FRAMES = 3;
-const BIRD_WIDTH = 17;
-const BIRD_HEIGHT = 12;
-
-/* Red Bird */
-const RED_BIRD = [
-    { x: 115, y: 381 },
-    { x: 115, y: 407 },
-    { x: 115, y: 433 }
-];
 
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
     const bgCtx = backgroundCanvas.getContext('2d');
     const sprite = new Image();
-    sprite.src = SPRITE_SRC;
+    sprite.src = constants.SPRITE_SRC;
 
     let birdFrameCnt = 0; // will always be between 0 and 2 as there are 3 bird frames
 
@@ -84,21 +39,29 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdAnimationHelper() {
         birdWingsInterval = setInterval(() => {
             birdFrameCnt++;
-            birdFrameCnt = birdFrameCnt % BIRD_FRAMES;
+            birdFrameCnt = birdFrameCnt % constants.BIRD_FRAMES;
         }, 90);
     }
 
     function drawPipePair({ x_up, y_up, x_down, y_down }) {
-        ctx.drawImage(sprite, GREEN_PIPE_UP_X, GREEN_PIPE_UP_Y, PIPE_WIDTH, PIPE_HEIGHT, x_up, y_up, PIPE_WIDTH * SPRITE_SCALE, PIPE_HEIGHT * SPRITE_SCALE);
-        ctx.drawImage(sprite, GREEN_PIPE_DOWN_X, GREEN_PIPE_DOWN_Y, PIPE_WIDTH, PIPE_HEIGHT, x_down, y_down, PIPE_WIDTH * SPRITE_SCALE, PIPE_HEIGHT * SPRITE_SCALE)
+        ctx.drawImage(sprite,
+            constants.GREEN_PIPE_UP_X, constants.GREEN_PIPE_UP_Y,
+            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
+            x_up, y_up,
+            constants.PIPE_WIDTH * constants.SPRITE_SCALE, constants.PIPE_HEIGHT * constants.SPRITE_SCALE);
+        ctx.drawImage(sprite,
+            constants.GREEN_PIPE_DOWN_X, constants.GREEN_PIPE_DOWN_Y,
+            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
+            x_down, y_down,
+            constants.PIPE_WIDTH * constants.SPRITE_SCALE, constants.PIPE_HEIGHT * constants.SPRITE_SCALE)
     }
 
     function getNewPipePair() {
-        const high = -PIPE_GAP - groundClearance;
-        const low = -PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP;
+        const high = -constants.PIPE_GAP - groundClearance;
+        const low = -constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP;
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
-        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + PIPE_HEIGHT * SPRITE_SCALE + PIPE_GAP, crossed: false };
+        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP, crossed: false };
     }
 
     function initializeGame() {
@@ -122,7 +85,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
                 stopGame();
-            } else if(!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
+            } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
                 console.log(score);
                 pipes[i].crossed = true;
@@ -136,7 +99,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             pipes.push(getNewPipePair());
         }
 
-        if (pipes[0].x_up <= -PIPE_WIDTH * SPRITE_SCALE) {
+        if (pipes[0].x_up <= -constants.PIPE_WIDTH * constants.SPRITE_SCALE) {
             pipes.shift();
         }
     }
@@ -144,10 +107,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //A simple collision checker to see if the bird is colliding with a pipe
     function checkCollision(enemy_x, enemy_yup, enemy_ydown) {
 
-        const enemy_yup_bottom = enemy_yup + PIPE_HEIGHT * SPRITE_SCALE;
+        const enemy_yup_bottom = enemy_yup + constants.PIPE_HEIGHT * constants.SPRITE_SCALE;
 
-        if ((birdX + BIRD_WIDTH * SPRITE_SCALE >= enemy_x + HIT_BOX_MARGIN) && (birdX <= enemy_x + PIPE_WIDTH * SPRITE_SCALE - HIT_BOX_MARGIN)) {
-            if ((birdY >= enemy_yup_bottom - HIT_BOX_MARGIN) && (birdY + BIRD_HEIGHT * SPRITE_SCALE <= enemy_ydown + HIT_BOX_MARGIN)) {
+        if ((birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE >= enemy_x + constants.HIT_BOX_MARGIN) &&
+            (birdX <= enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE - constants.HIT_BOX_MARGIN)) {
+            if ((birdY >= enemy_yup_bottom - constants.HIT_BOX_MARGIN) &&
+                (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE <= enemy_ydown + constants.HIT_BOX_MARGIN)) {
                 return false;
             } else {
                 return true;
@@ -158,7 +123,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function checkPipeCrossed(enemy_x) {
-        if( (birdX < enemy_x + PIPE_WIDTH * SPRITE_SCALE) && (birdX + BIRD_WIDTH * SPRITE_SCALE > enemy_x + PIPE_WIDTH *SPRITE_SCALE) ) {
+        if ((birdX < enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE) &&
+            (birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE > enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE)) {
             return true;
         }
         return false;
@@ -166,7 +132,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //checks the collision between bird and ground
     function checkGroundCollision() {
-        if (birdY + BIRD_HEIGHT * SPRITE_SCALE >= groundCanvasY) {
+        if (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE >= groundCanvasY) {
             stopGame();
         }
     }
@@ -177,7 +143,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function getBackgroundPatternCanvas() {
         const pattern_canvas = document.createElement('canvas');
         pattern_canvas.height = backgroundCanvas.height;
-        pattern_canvas.width = Math.ceil(backgroundCanvas.height * BG_WIDTH / BG_HEIGHT);
+        pattern_canvas.width = Math.ceil(backgroundCanvas.height * constants.BG_WIDTH / constants.BG_HEIGHT);
         return pattern_canvas;
     }
 
@@ -194,7 +160,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         /* BACKGROUND */
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
-        pattern_ctx.drawImage(sprite, BG_DAY_X, BG_DAY_Y, BG_WIDTH, BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
+        pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
 
         bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
 
@@ -225,11 +191,11 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         checkGroundCollision();
         managePipes();
-        ctx.drawImage(sprite, GROUND_X, GROUND_Y, GROUND_WIDTH, GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
-        ctx.drawImage(sprite, RED_BIRD[birdFrameCnt].x, RED_BIRD[birdFrameCnt].y, BIRD_WIDTH, BIRD_HEIGHT, birdX, birdY, BIRD_WIDTH * SPRITE_SCALE, BIRD_HEIGHT * SPRITE_SCALE);
+        ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
+        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
         // pipe_dx -= 2;
         birdY += 2;
-        birdY = Math.min(canvas.height - groundClearance - BIRD_HEIGHT * SPRITE_SCALE, birdY);
+        birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
         requestAnimationFrame(draw);
     }
 
