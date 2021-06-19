@@ -5,9 +5,9 @@ const backgroundCanvas = document.getElementById('background-canvas'); //another
 
 let currentState = constants.START;
 
-let translateSpeed = 1;
+let translateSpeed = 0;
 const pipes = [];
-let pipe_dx = 2;
+let pipe_dx = 0;
 
 let birdWingsInterval;
 
@@ -18,7 +18,8 @@ let enemyId = 0;
 // bird Coordiantes
 const birdX = 100;
 let birdY = 200; //y coordinate will change on clicking
-let birdY_dx = 50; //distance by which bird coordinate will change
+let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
+let birdGravity = 0 //velocity at which the bird will fall
 
 const groundCanvasWidth = canvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
@@ -64,19 +65,22 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP, crossed: false };
     }
 
-    function initializeGame() {
+    function initializeGameValues() {
         pipe_dx = 2;
         birdY_dx = 50;
         translateSpeed = 1;
+        birdGravity = 2;
+        canvas.removeEventListener("click", initializeGameValues);
         canvas.addEventListener("click", birdJump);
         birdAnimationHelper()
     }
 
     //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
-    function stopGame() {
+    function stopGameValues() {
         pipe_dx = 0;
         birdY_dx = 0;
         translateSpeed = 0;
+        birdGravity = 0;
         canvas.removeEventListener("click", birdJump);
         clearInterval(birdWingsInterval);
     }
@@ -92,7 +96,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
-                stopGame();
+                stopGameValues();
             } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
                 console.log(score);
@@ -141,7 +145,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //checks the collision between bird and ground
     function checkGroundCollision() {
         if (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE >= groundCanvasY) {
-            stopGame();
+            stopGameValues();
         }
     }
 
@@ -158,14 +162,21 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     const bgPatternCanvas = getBackgroundPatternCanvas();
     const pattern_ctx = bgPatternCanvas.getContext("2d");
 
-    birdAnimationHelper();
+    // birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
 
     pipes.push(getNewPipePair());
 
     function draw() {
 
-        /* BACKGROUND */
+        drawBackground();
+        drawGame();
+        
+        requestAnimationFrame(draw);
+    }
+
+    //draws the background for game using the background canvas
+    function drawBackground() {
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
@@ -180,9 +191,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         bg_dx += translateSpeed; //bg_dx is added equal to the translate speed because the x origin or the zero point of x axis has moved left by translate speed
         //in simple words the the x origin has moved left of the screen due to negative translate which is not inside the canvas hence not visible anymore
         //therefore we add the translate speed to bg_dx to draw the pattern from the point where the canvas screen starts or the point from where the canvas becomes visible
+    }
 
-
-        /* GAME */
+    //draws the game in the main canvas
+    function drawGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         /*drawImage params 
             image - png, jpg, canvas etc,
@@ -196,22 +208,21 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             height_in_canvas - same as above but for height
         */
 
-
         checkGroundCollision();
         managePipes();
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
         drawScore();
-        birdY += 2;
+        birdY += birdGravity;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
-        requestAnimationFrame(draw);
     }
 
 
     function birdJump() {
         birdY -= birdY_dx;
     }
-    canvas.addEventListener("click", birdJump);
+    // canvas.addEventListener("click", birdJump);
+    canvas.addEventListener("click", initializeGameValues);
 
     draw();
 }
