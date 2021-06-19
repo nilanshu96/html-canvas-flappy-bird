@@ -82,6 +82,17 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP, crossed: false };
     }
 
+    function onPlayButtonClick(event) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const mouseCanvasX = event.clientX - canvasRect["left"];
+        const mouseCanvasY = event.clientY - canvasRect["top"];
+        if(mouseCanvasX >= playBtnCanvasX && mouseCanvasX <= playBtnCanvasX + playBtnCanvasWidth) {
+            if(mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
+                console.log("button clicked");
+            }
+        }
+    }
+
     function initializeGameValues() {
         pipe_dx = 2;
         birdY_dx = 50;
@@ -89,7 +100,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdGravity = 2;
         canvas.removeEventListener("click", initializeGameValues);
         canvas.addEventListener("click", birdJump);
-        birdAnimationHelper()
     }
 
     //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
@@ -179,7 +189,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     const bgPatternCanvas = getBackgroundPatternCanvas();
     const pattern_ctx = bgPatternCanvas.getContext("2d");
 
-    // birdAnimationHelper();
+    birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
 
     pipes.push(getNewPipePair());
@@ -253,9 +263,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y, 
             constants.PLAY_BUTTON_WIDTH, constants.PLAY_BUTTON_HEIGHT,
             playBtnCanvasX, playBtnCanvasY,
-            playBtnCanvasWidth, playBtnCanvasHeight
-            )
-
+            playBtnCanvasWidth, playBtnCanvasHeight);
     }
 
 
@@ -263,6 +271,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY -= birdY_dx;
     }
     // canvas.addEventListener("click", initializeGameValues);
+    canvas.addEventListener("click", onPlayButtonClick);
 
     draw();
 }

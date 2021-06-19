@@ -53,6 +53,11 @@ export const TITLE_TEXT_Y = 91;
 export const TITLE_TEXT_WIDTH = 89;
 export const TITLE_TEXT_HEIGHT = 24;
 
+export const READY_TEXT_X = 295;
+export const READY_TEXT_Y = 59;
+export const READY_TEXT_WIDTH = 92;
+export const READY_TEXT_HEIGHT = 25;
+
 /* Play Button */
 export const PLAY_BUTTON_X = 354;
 export const PLAY_BUTTON_Y = 118;
