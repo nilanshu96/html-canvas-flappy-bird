@@ -64,3 +64,9 @@ export const PLAY_BUTTON_Y = 118;
 export const PLAY_BUTTON_WIDTH = 52;
 export const PLAY_BUTTON_HEIGHT = 29;
 
+/* Jump Instruction Image */
+export const JUMP_INSTRUCTION_X = 292;
+export const JUMP_INSTRUCTION_Y = 91;
+export const JUMP_INSTRUCTION_WIDTH = 57;
+export const JUMP_INSTRUCTION_HEIGHT = 49;
+
