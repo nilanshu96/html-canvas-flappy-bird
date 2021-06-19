@@ -81,6 +81,14 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         clearInterval(birdWingsInterval);
     }
 
+    //draws the current score on screen
+    function drawScore() {
+        ctx.font = "bold 50px Serif"; //sets the font based on the css font property
+        ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
+        ctx.textAlign = "center"; //aligns text based on the css property
+        ctx.fillText(score, canvas.width/2, 70); //text to be drawn, x pos, y pos
+    }
+
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
@@ -193,7 +201,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         managePipes();
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
-        // pipe_dx -= 2;
+        drawScore();
         birdY += 2;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
         requestAnimationFrame(draw);
