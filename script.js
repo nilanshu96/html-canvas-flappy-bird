@@ -19,7 +19,7 @@ let enemyId = 0;
 
 // bird
 const birdX = 100;
-const birdYInitial = canvas.height/2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE/2;
+const birdYInitial = canvas.height / 2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE / 2;
 let birdY = birdYInitial; //y coordinate will change on clicking
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
 let birdGravity = 0 //velocity at which the bird will fall
@@ -58,6 +58,18 @@ const jumpInstructionCanvasWidth = constants.JUMP_INSTRUCTION_WIDTH * constants.
 const jumpInstructionCanvasHeight = constants.JUMP_INSTRUCTION_HEIGHT * constants.SPRITE_SCALE;
 const jumpInstructionX = canvas.width / 2 - jumpInstructionCanvasWidth / 2;
 const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + 50;
+
+// Game Over Text
+const gameOverWidth = constants.GAME_OVER_WIDTH * constants.SPRITE_SCALE;
+const gameOverHeight = constants.GAME_OVER_HEIGHT * constants.SPRITE_SCALE;
+const gameOverX = canvas.width / 2 - gameOverWidth / 2;
+const gameOverY = 100;
+
+// Game over score
+const gameOverScoreY = gameOverY + gameOverHeight + 70;
+
+// Game Over Play Button
+const gameOverPlayBtnY = gameOverScoreY + 100;
 
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
@@ -111,6 +123,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function initializeGameValues() {
         pipe_dx = 2;
         birdY_dx = 50;
+        pipes.splice(0, pipes.length); //clear the pipes
         birdY = birdYInitial;
         translateSpeed = 1;
         birdGravity = 2;
@@ -129,11 +142,11 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     //draws the current score on screen
-    function drawScore() {
+    function drawScore(y_pos) {
         ctx.font = "bold 50px Serif"; //sets the font based on the css font property
         ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
         ctx.textAlign = "center"; //aligns text based on the css property
-        ctx.fillText(score, canvas.width / 2, 70); //text to be drawn, x pos, y pos
+        ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
     }
 
     function managePipes() {
@@ -214,7 +227,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         drawBackground();
         // drawGame();
-        drawGetReadyScreen();
+        drawGameOverScreen();
         requestAnimationFrame(draw);
     }
 
@@ -255,7 +268,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         managePipes();
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
-        drawScore();
+        drawScore(70);
         birdY += birdGravity;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
     }
@@ -298,7 +311,24 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             jumpInstructionCanvasWidth, jumpInstructionCanvasHeight);
 
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
+    }
 
+    function drawGameOverScreen() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.drawImage(sprite,
+            constants.GAME_OVER_X, constants.GAME_OVER_Y,
+            constants.GAME_OVER_WIDTH, constants.GAME_OVER_HEIGHT,
+            gameOverX, gameOverY,
+            gameOverWidth, gameOverHeight);
+
+        drawScore(gameOverScoreY);
+
+        ctx.drawImage(sprite,
+            constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y,
+            constants.PLAY_BUTTON_WIDTH, constants.PLAY_BUTTON_HEIGHT,
+            playBtnCanvasX, gameOverPlayBtnY,
+            playBtnCanvasWidth, playBtnCanvasHeight);
     }
 
 

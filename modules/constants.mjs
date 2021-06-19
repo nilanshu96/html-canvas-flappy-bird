@@ -58,6 +58,11 @@ export const READY_TEXT_Y = 59;
 export const READY_TEXT_WIDTH = 92;
 export const READY_TEXT_HEIGHT = 25;
 
+export const GAME_OVER_X = 395;
+export const GAME_OVER_Y = 59;
+export const GAME_OVER_WIDTH = 96;
+export const GAME_OVER_HEIGHT = 21;
+
 /* Play Button */
 export const PLAY_BUTTON_X = 354;
 export const PLAY_BUTTON_Y = 118;
