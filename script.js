@@ -21,11 +21,28 @@ let birdY = 200; //y coordinate will change on clicking
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
 let birdGravity = 0 //velocity at which the bird will fall
 
+// ground values within the canvas
 const groundCanvasWidth = canvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
 const groundClearance = groundCanvasHeight / 2; //part of ground that would appear on canvas
 const groundCanvasX = 0;
 const groundCanvasY = canvas.height - groundCanvasHeight / 2;
+
+// Title text values within the canvas
+const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * constants.SPRITE_SCALE;
+const titleCanvasHeight = constants.TITLE_TEXT_HEIGHT * constants.SPRITE_SCALE;
+const titleCanvasX = canvas.width / 2 - titleCanvasWidth / 2;
+const titleCanvasY = canvas.height / 4;
+
+// Bird values on start screen
+const birdCanvasX = canvas.width/2 - constants.BIRD_WIDTH * constants.SPRITE_SCALE/2;
+const birdCanvasY = titleCanvasY + titleCanvasHeight + 30;
+
+// Play button values within canvas
+const playBtnCanvasWidth = constants.PLAY_BUTTON_WIDTH * constants.SPRITE_SCALE;
+const playBtnCanvasHeight = constants.PLAY_BUTTON_HEIGHT * constants.SPRITE_SCALE;
+const playBtnCanvasX = canvas.width/2 - playBtnCanvasWidth/2;
+const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE + 70;
 
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
@@ -90,7 +107,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.font = "bold 50px Serif"; //sets the font based on the css font property
         ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
         ctx.textAlign = "center"; //aligns text based on the css property
-        ctx.fillText(score, canvas.width/2, 70); //text to be drawn, x pos, y pos
+        ctx.fillText(score, canvas.width / 2, 70); //text to be drawn, x pos, y pos
     }
 
     function managePipes() {
@@ -170,8 +187,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function draw() {
 
         drawBackground();
-        drawGame();
-        
+        // drawGame();
+        drawStartScreen();
         requestAnimationFrame(draw);
     }
 
@@ -217,12 +234,35 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
     }
 
+    function drawStartScreen() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.drawImage(sprite,
+            constants.TITLE_TEXT_X, constants.TITLE_TEXT_Y,
+            constants.TITLE_TEXT_WIDTH, constants.TITLE_TEXT_HEIGHT,
+            titleCanvasX, titleCanvasY,
+            titleCanvasWidth, titleCanvasHeight);
+
+        ctx.drawImage(sprite, 
+            constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, 
+            constants.BIRD_WIDTH, constants.BIRD_HEIGHT, 
+            birdCanvasX, birdCanvasY, 
+            constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
+
+        ctx.drawImage(sprite,
+            constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y, 
+            constants.PLAY_BUTTON_WIDTH, constants.PLAY_BUTTON_HEIGHT,
+            playBtnCanvasX, playBtnCanvasY,
+            playBtnCanvasWidth, playBtnCanvasHeight
+            )
+
+    }
+
 
     function birdJump() {
         birdY -= birdY_dx;
     }
-    // canvas.addEventListener("click", birdJump);
-    canvas.addEventListener("click", initializeGameValues);
+    // canvas.addEventListener("click", initializeGameValues);
 
     draw();
 }

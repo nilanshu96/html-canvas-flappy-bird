@@ -2,6 +2,7 @@ export const HIT_BOX_MARGIN = 15; //used to decrease the enemy hit box for bette
 
 //Game States
 export const START = "start";
+export const READY = "ready";
 export const GAME = "game";
 export const FINISH = "finish";
 
@@ -45,4 +46,16 @@ export const RED_BIRD = [
     { x: 115, y: 407 },
     { x: 115, y: 433 }
 ];
+
+/* Text */
+export const TITLE_TEXT_X = 351;
+export const TITLE_TEXT_Y = 91;
+export const TITLE_TEXT_WIDTH = 89;
+export const TITLE_TEXT_HEIGHT = 24;
+
+/* Play Button */
+export const PLAY_BUTTON_X = 354;
+export const PLAY_BUTTON_Y = 118;
+export const PLAY_BUTTON_WIDTH = 52;
+export const PLAY_BUTTON_HEIGHT = 29;
 
