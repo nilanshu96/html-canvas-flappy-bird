@@ -14,6 +14,7 @@ let birdWingsInterval;
 // Scoring
 let score = 0;
 let enemyId = 0;
+let gameOver = false;
 
 // Coordinates and dimension values to be used for positioning and drawing on canvas
 
@@ -124,9 +125,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         pipe_dx = 2;
         birdY_dx = 50;
         pipes.splice(0, pipes.length); //clear the pipes
+        pipes.push(getNewPipePair());
         birdY = birdYInitial;
         translateSpeed = 1;
+        gameOver = false;
         birdGravity = 2;
+        birdJump();
         canvas.removeEventListener("click", initializeGameValues);
         canvas.addEventListener("click", birdJump);
     }
@@ -136,6 +140,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         pipe_dx = 0;
         birdY_dx = 0;
         translateSpeed = 0;
+        gameOver = true;
         birdGravity = 0;
         canvas.removeEventListener("click", birdJump);
         clearInterval(birdWingsInterval);
@@ -149,26 +154,42 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
     }
 
+    function drawPipes() {
+        for (let i = 0; i < pipes.length; i++) {
+            drawPipePair(pipes[i]);
+            pipes[i].x_up -= pipe_dx;
+            pipes[i].x_down -= pipe_dx;
+        }
+    }
+
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
                 stopGameValues();
+                break;
             } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
                 console.log(score);
                 pipes[i].crossed = true;
             }
-            drawPipePair(pipes[i]);
-            pipes[i].x_up -= pipe_dx;
-            pipes[i].x_down -= pipe_dx;
         }
 
-        if (pipes[pipes.length - 1].x_up <= canvas.width / 2) {
+        drawPipes();
+
+        if (pipes.length > 0 && pipes[pipes.length - 1].x_up <= canvas.width / 2) {
             pipes.push(getNewPipePair());
         }
 
-        if (pipes[0].x_up <= -constants.PIPE_WIDTH * constants.SPRITE_SCALE) {
+        if (pipes.length > 0 && pipes[0].x_up <= -constants.PIPE_WIDTH * constants.SPRITE_SCALE) {
             pipes.shift();
+        }
+    }
+
+    function checkGameOver() {
+        if (gameOver) {
+            drawGameOverScreen();
+        } else {
+            drawScore(70);
         }
     }
 
@@ -221,13 +242,13 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
 
-    pipes.push(getNewPipePair());
+
 
     function draw() {
 
         drawBackground();
-        // drawGame();
-        drawGameOverScreen();
+        drawGame();
+        // drawGameOverScreen();
         requestAnimationFrame(draw);
     }
 
@@ -264,11 +285,18 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             height_in_canvas - same as above but for height
         */
 
+        /* 
+            The order in which images are drawn is important. Hence maintaining the following order of drawImage is important.
+            Here the bird is drawn first, then the pipes and then the ground which is why the pipes appear on top of bird on 
+            collision and the pipes appear to comes from the ground because the ground is drawn over the pipes thus hiding the
+            bottom of pipes. 
+        */
         checkGroundCollision();
-        managePipes();
-        ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
-        drawScore(70);
+        managePipes();
+        checkGameOver();
+        ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
+
         birdY += birdGravity;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
     }
@@ -314,7 +342,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function drawGameOverScreen() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.drawImage(sprite,
             constants.GAME_OVER_X, constants.GAME_OVER_Y,
@@ -335,7 +363,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdJump() {
         birdY -= birdY_dx;
     }
-    // canvas.addEventListener("click", initializeGameValues);
+    canvas.addEventListener("click", initializeGameValues);
     // canvas.addEventListener("click", onPlayButtonClick);
 
     draw();
