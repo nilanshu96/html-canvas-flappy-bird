@@ -144,6 +144,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         translateSpeed = 1;
         gameOver = false;
         birdGravity = 2;
+        score = 0;
         birdJump();
         canvas.removeEventListener("click", initializeGameValues);
         canvas.addEventListener("click", birdJump);
@@ -184,7 +185,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
                 break;
             } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
-                console.log(score);
                 pipes[i].crossed = true;
             }
         }
@@ -276,9 +276,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
                 drawStartScreen();
         }
 
-        
-        // drawGame();
-        // drawGameOverScreen();
         requestAnimationFrame(draw);
     }
 
@@ -372,7 +369,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function drawGameOverScreen() {
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.drawImage(sprite,
             constants.GAME_OVER_X, constants.GAME_OVER_Y,
@@ -393,7 +389,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdJump() {
         birdY -= birdY_dx;
     }
-    // canvas.addEventListener("click", initializeGameValues);
+    
     canvas.addEventListener("click", onPlayButtonClick);
 
     draw();
