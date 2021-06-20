@@ -115,10 +115,23 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         const mouseCanvasX = event.clientX - canvasRect["left"];
         const mouseCanvasY = event.clientY - canvasRect["top"];
         if (mouseCanvasX >= playBtnCanvasX && mouseCanvasX <= playBtnCanvasX + playBtnCanvasWidth) {
-            if (mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
-                console.log("button clicked");
+            if (currentState === constants.START &&
+                mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
+                currentState = constants.READY;
+                canvas.removeEventListener("click", onPlayButtonClick);
+                canvas.addEventListener("click", initializeGameValues);
+            } else if (currentState === constants.GAME &&
+                mouseCanvasY >= gameOverPlayBtnY && mouseCanvasY <= gameOverPlayBtnY + playBtnCanvasHeight) {
+                currentState = constants.READY;
+                resetBirdPos();
+                canvas.removeEventListener("click", onPlayButtonClick);
+                canvas.addEventListener("click", initializeGameValues);
             }
         }
+    }
+
+    function resetBirdPos() {
+        birdY = birdYInitial;
     }
 
     function initializeGameValues() {
@@ -126,7 +139,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY_dx = 50;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
-        birdY = birdYInitial;
+        resetBirdPos();
+        currentState = constants.GAME;
         translateSpeed = 1;
         gameOver = false;
         birdGravity = 2;
@@ -143,6 +157,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         gameOver = true;
         birdGravity = 0;
         canvas.removeEventListener("click", birdJump);
+        canvas.addEventListener("click", onPlayButtonClick);
         clearInterval(birdWingsInterval);
     }
 
@@ -247,7 +262,22 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function draw() {
 
         drawBackground();
-        drawGame();
+        switch(currentState) {
+            case constants.START: 
+                drawStartScreen();
+                break;
+            case constants.READY:
+                drawGetReadyScreen();
+                break;
+            case constants.GAME:
+                drawGame();
+                break;
+            default:
+                drawStartScreen();
+        }
+
+        
+        // drawGame();
         // drawGameOverScreen();
         requestAnimationFrame(draw);
     }
@@ -363,8 +393,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdJump() {
         birdY -= birdY_dx;
     }
-    canvas.addEventListener("click", initializeGameValues);
-    // canvas.addEventListener("click", onPlayButtonClick);
+    // canvas.addEventListener("click", initializeGameValues);
+    canvas.addEventListener("click", onPlayButtonClick);
 
     draw();
 }
