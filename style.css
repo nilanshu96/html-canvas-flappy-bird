@@ -10,7 +10,7 @@ main {
   justify-content: center;
 }
 
-.game-container {
+#game-container {
   position: relative;
   border: 1px solid black;
   width: 512px;

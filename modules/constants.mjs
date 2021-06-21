@@ -1,5 +1,3 @@
-export const HIT_BOX_MARGIN = 15; //used to decrease the enemy hit box for better gameplay
-
 //Game States
 export const START = "start";
 export const READY = "ready";
@@ -24,8 +22,6 @@ export const GROUND_WIDTH = 168;
 export const GROUND_HEIGHT = 56;
 
 /* pipes */
-export const PIPE_GAP = 110;
-
 export const PIPE_WIDTH = 26;
 export const PIPE_HEIGHT = 160;
 

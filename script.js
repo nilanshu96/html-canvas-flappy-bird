@@ -2,26 +2,32 @@ import * as constants from './modules/constants.mjs';
 
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
+// const container = document.getElementById('game-container');
+
 
 let currentState = constants.START;
 
 let translateSpeed = 0;
 const pipes = [];
+let pipeGap = Math.floor(canvas.height * 0.21); //gap between top and bottom pipes
 let pipe_dx = 0;
 
 let birdWingsInterval;
 
 // Scoring
 let score = 0;
-let enemyId = 0;
 let gameOver = false;
+
+const font = "bold " + Math.floor(canvas.height * 0.1) + "px" + " Serif";
+const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the enemy hit box for better gameplay
 
 // Coordinates and dimension values to be used for positioning and drawing on canvas
 
 // bird
-const birdX = 100;
+const birdX = Math.floor(canvas.width*0.2);
 const birdYInitial = canvas.height / 2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE / 2;
 let birdY = birdYInitial; //y coordinate will change on clicking
+const birdY_dx_initial = Math.floor(canvas.height * 0.1);
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
 let birdGravity = 0 //velocity at which the bird will fall
 
@@ -40,37 +46,37 @@ const titleCanvasY = canvas.height / 4;
 
 // Bird pos on start screen
 const birdCanvasX = canvas.width / 2 - constants.BIRD_WIDTH * constants.SPRITE_SCALE / 2;
-const birdCanvasY = titleCanvasY + titleCanvasHeight + 30;
+const birdCanvasY = titleCanvasY + titleCanvasHeight + Math.floor(canvas.height * 0.06);
 
 // Play button
 const playBtnCanvasWidth = constants.PLAY_BUTTON_WIDTH * constants.SPRITE_SCALE;
 const playBtnCanvasHeight = constants.PLAY_BUTTON_HEIGHT * constants.SPRITE_SCALE;
 const playBtnCanvasX = canvas.width / 2 - playBtnCanvasWidth / 2;
-const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE + 70;
+const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE + Math.floor(canvas.height * 0.14);
 
 // Get Ready Text
 const getReadyCanvasWidth = constants.READY_TEXT_WIDTH * constants.SPRITE_SCALE;
 const getReadyCanvasHeight = constants.READY_TEXT_HEIGHT * constants.SPRITE_SCALE;
 const getReadyCanvasX = canvas.width / 2 - getReadyCanvasWidth / 2;
-const getReadyCanvasY = 100;
+const getReadyCanvasY = Math.floor(canvas.height*0.2);
 
 // Jump instruction image
 const jumpInstructionCanvasWidth = constants.JUMP_INSTRUCTION_WIDTH * constants.SPRITE_SCALE;
 const jumpInstructionCanvasHeight = constants.JUMP_INSTRUCTION_HEIGHT * constants.SPRITE_SCALE;
 const jumpInstructionX = canvas.width / 2 - jumpInstructionCanvasWidth / 2;
-const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + 50;
+const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + Math.floor(canvas.height*0.1);
 
 // Game Over Text
 const gameOverWidth = constants.GAME_OVER_WIDTH * constants.SPRITE_SCALE;
 const gameOverHeight = constants.GAME_OVER_HEIGHT * constants.SPRITE_SCALE;
 const gameOverX = canvas.width / 2 - gameOverWidth / 2;
-const gameOverY = 100;
+const gameOverY = Math.floor(canvas.height*0.2);
 
 // Game over score
-const gameOverScoreY = gameOverY + gameOverHeight + 70;
+const gameOverScoreY = gameOverY + gameOverHeight + Math.floor(canvas.height * 0.14);
 
 // Game Over Play Button
-const gameOverPlayBtnY = gameOverScoreY + 100;
+const gameOverPlayBtnY = gameOverScoreY + Math.floor(canvas.height*0.2);
 
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
@@ -103,11 +109,11 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function getNewPipePair() {
-        const high = -constants.PIPE_GAP - groundClearance;
-        const low = -constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP;
+        const high = -pipeGap - groundClearance;
+        const low = -constants.PIPE_HEIGHT * constants.SPRITE_SCALE + pipeGap;
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
-        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + constants.PIPE_GAP, crossed: false };
+        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + pipeGap, crossed: false };
     }
 
     function onPlayButtonClick(event) {
@@ -135,15 +141,15 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function initializeGameValues() {
-        pipe_dx = 2;
-        birdY_dx = 50;
+        pipe_dx = Math.floor(canvas.width * 0.005);
+        birdY_dx = birdY_dx_initial;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
         resetBirdPos();
         currentState = constants.GAME;
         translateSpeed = 1;
         gameOver = false;
-        birdGravity = 2;
+        birdGravity = Math.floor(canvas.height * 0.005);
         score = 0;
         birdJump();
         canvas.removeEventListener("click", initializeGameValues);
@@ -164,7 +170,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //draws the current score on screen
     function drawScore(y_pos) {
-        ctx.font = "bold 50px Serif"; //sets the font based on the css font property
+        ctx.font = font; //sets the font based on the css font property
         ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
         ctx.textAlign = "center"; //aligns text based on the css property
         ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
@@ -204,7 +210,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         if (gameOver) {
             drawGameOverScreen();
         } else {
-            drawScore(70);
+            drawScore(Math.floor(canvas.height * 0.14));
         }
     }
 
@@ -213,10 +219,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         const enemy_yup_bottom = enemy_yup + constants.PIPE_HEIGHT * constants.SPRITE_SCALE;
 
-        if ((birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE >= enemy_x + constants.HIT_BOX_MARGIN) &&
-            (birdX <= enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE - constants.HIT_BOX_MARGIN)) {
-            if ((birdY >= enemy_yup_bottom - constants.HIT_BOX_MARGIN) &&
-                (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE <= enemy_ydown + constants.HIT_BOX_MARGIN)) {
+        if ((birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE >= enemy_x + hitBoxMargin) &&
+            (birdX <= enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE - hitBoxMargin)) {
+            if ((birdY >= enemy_yup_bottom - hitBoxMargin) &&
+                (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE <= enemy_ydown + hitBoxMargin)) {
                 return false;
             } else {
                 return true;
