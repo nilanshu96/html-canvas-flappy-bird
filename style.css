@@ -13,7 +13,7 @@ main {
 #game-container {
   position: relative;
   border: 1px solid black;
-  width: 512px;
+  width: 284px;
   height: 512px;
   align-self: center;
 }

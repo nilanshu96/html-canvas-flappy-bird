@@ -7,7 +7,7 @@ export const FINISH = "finish";
 // Following are the constants that locate a particular image in the sprite sheet using coordinates
 /* Sprite constants */
 export const SPRITE_SRC = "./assets/flappy-sprite.png";
-export const SPRITE_SCALE = 3;
+export const SPRITE_SCALE = 2;
 
 /* background */
 export const BG_DAY_X = 0;

@@ -9,7 +9,7 @@ let currentState = constants.START;
 
 let translateSpeed = 0;
 const pipes = [];
-let pipeGap = Math.floor(canvas.height * 0.21); //gap between top and bottom pipes
+let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
 
 let birdWingsInterval;
@@ -25,7 +25,7 @@ const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the ene
 
 // bird
 const birdX = Math.floor(canvas.width*0.2);
-const birdYInitial = canvas.height / 2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE / 2;
+const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE / 2);
 let birdY = birdYInitial; //y coordinate will change on clicking
 const birdY_dx_initial = Math.floor(canvas.height * 0.1);
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
@@ -34,24 +34,24 @@ let birdGravity = 0 //velocity at which the bird will fall
 // ground
 const groundCanvasWidth = canvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
-const groundClearance = groundCanvasHeight / 2; //part of ground that would appear on canvas
+const groundClearance = Math.floor(groundCanvasHeight / 2); //part of ground that would appear on canvas
 const groundCanvasX = 0;
-const groundCanvasY = canvas.height - groundCanvasHeight / 2;
+const groundCanvasY = Math.floor(canvas.height - groundCanvasHeight / 2);
 
 // Title text
 const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * constants.SPRITE_SCALE;
 const titleCanvasHeight = constants.TITLE_TEXT_HEIGHT * constants.SPRITE_SCALE;
-const titleCanvasX = canvas.width / 2 - titleCanvasWidth / 2;
-const titleCanvasY = canvas.height / 4;
+const titleCanvasX = Math.floor(canvas.width / 2 - titleCanvasWidth / 2);
+const titleCanvasY = Math.floor(canvas.height / 4);
 
 // Bird pos on start screen
-const birdCanvasX = canvas.width / 2 - constants.BIRD_WIDTH * constants.SPRITE_SCALE / 2;
+const birdCanvasX = Math.floor(canvas.width / 2 - constants.BIRD_WIDTH * constants.SPRITE_SCALE / 2);
 const birdCanvasY = titleCanvasY + titleCanvasHeight + Math.floor(canvas.height * 0.06);
 
 // Play button
 const playBtnCanvasWidth = constants.PLAY_BUTTON_WIDTH * constants.SPRITE_SCALE;
 const playBtnCanvasHeight = constants.PLAY_BUTTON_HEIGHT * constants.SPRITE_SCALE;
-const playBtnCanvasX = canvas.width / 2 - playBtnCanvasWidth / 2;
+const playBtnCanvasX = Math.floor(canvas.width / 2 - playBtnCanvasWidth / 2);
 const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE + Math.floor(canvas.height * 0.14);
 
 // Get Ready Text
@@ -69,7 +69,7 @@ const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + Math.floor(can
 // Game Over Text
 const gameOverWidth = constants.GAME_OVER_WIDTH * constants.SPRITE_SCALE;
 const gameOverHeight = constants.GAME_OVER_HEIGHT * constants.SPRITE_SCALE;
-const gameOverX = canvas.width / 2 - gameOverWidth / 2;
+const gameOverX = Math.floor(canvas.width / 2 - gameOverWidth / 2);
 const gameOverY = Math.floor(canvas.height*0.2);
 
 // Game over score
@@ -108,9 +108,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             constants.PIPE_WIDTH * constants.SPRITE_SCALE, constants.PIPE_HEIGHT * constants.SPRITE_SCALE)
     }
 
+    const low = Math.floor(canvas.height/5) - constants.PIPE_HEIGHT * constants.SPRITE_SCALE;
+    const high = 0;
     function getNewPipePair() {
-        const high = -pipeGap - groundClearance;
-        const low = -constants.PIPE_HEIGHT * constants.SPRITE_SCALE + pipeGap;
+        console.log(`low: ${low}, high: ${high}`);
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + pipeGap, crossed: false };
@@ -145,6 +146,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY_dx = birdY_dx_initial;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
+        bg_dx = 0;
+        bgCtx.resetTransform();
         resetBirdPos();
         currentState = constants.GAME;
         translateSpeed = 1;
@@ -187,7 +190,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
-                stopGameValues();
+                if(!gameOver) stopGameValues();
                 break;
             } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
@@ -197,7 +200,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         drawPipes();
 
-        if (pipes.length > 0 && pipes[pipes.length - 1].x_up <= canvas.width / 2) {
+        if (pipes.length > 0 && pipes[pipes.length - 1].x_up <= canvas.width / 3) {
             pipes.push(getNewPipePair());
         }
 
@@ -243,7 +246,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //checks the collision between bird and ground
     function checkGroundCollision() {
         if (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE >= groundCanvasY) {
-            stopGameValues();
+            if(!gameOver) stopGameValues();
         }
     }
 
