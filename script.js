@@ -11,6 +11,7 @@ let translateSpeed = 0;
 const pipes = [];
 let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
+const pipeDist = canvas.width - 100*constants.SPRITE_SCALE; //distance between two pipe pairs
 
 let birdWingsInterval;
 
@@ -125,14 +126,14 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             if (currentState === constants.START &&
                 mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
                 currentState = constants.READY;
-                canvas.removeEventListener("click", onPlayButtonClick);
-                canvas.addEventListener("click", initializeGameValues);
-            } else if (currentState === constants.GAME &&
+                
+                canvas.onclick = initializeGameValues;
+            } else if (currentState === constants.FINISH &&
                 mouseCanvasY >= gameOverPlayBtnY && mouseCanvasY <= gameOverPlayBtnY + playBtnCanvasHeight) {
                 currentState = constants.READY;
                 resetBirdPos();
-                canvas.removeEventListener("click", onPlayButtonClick);
-                canvas.addEventListener("click", initializeGameValues);
+                
+                canvas.onclick = initializeGameValues;
             }
         }
     }
@@ -142,7 +143,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function initializeGameValues() {
-        pipe_dx = Math.floor(canvas.width * 0.005);
+        pipe_dx = Math.floor(canvas.width * 0.008);
         birdY_dx = birdY_dx_initial;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
@@ -155,8 +156,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdGravity = Math.floor(canvas.height * 0.005);
         score = 0;
         birdJump();
-        canvas.removeEventListener("click", initializeGameValues);
-        canvas.addEventListener("click", birdJump);
+        birdAnimationHelper();
+        canvas.onclick = birdJump;
     }
 
     //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
@@ -166,8 +167,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         translateSpeed = 0;
         gameOver = true;
         birdGravity = 0;
-        canvas.removeEventListener("click", birdJump);
-        canvas.addEventListener("click", onPlayButtonClick);
+        canvas.onclick = onPlayButtonClick;
         clearInterval(birdWingsInterval);
     }
 
@@ -200,7 +200,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
         drawPipes();
 
-        if (pipes.length > 0 && pipes[pipes.length - 1].x_up <= canvas.width / 3) {
+        if (pipes.length > 0 && pipes[pipes.length - 1].x_up <= pipeDist) {
             pipes.push(getNewPipePair());
         }
 
@@ -212,6 +212,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function checkGameOver() {
         if (gameOver) {
             drawGameOverScreen();
+            currentState = constants.FINISH;
         } else {
             drawScore(Math.floor(canvas.height * 0.14));
         }
@@ -270,16 +271,24 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     function draw() {
 
-        drawBackground();
         switch(currentState) {
-            case constants.START: 
+            case constants.START:
+                drawBackground(); 
                 drawStartScreen();
                 break;
             case constants.READY:
+                drawBackground();
                 drawGetReadyScreen();
                 break;
             case constants.GAME:
+                drawBackground();
                 drawGame();
+                break;
+            case constants.FINISH:
+                /*
+                    Do nothing here. There would be no repanting on canvas until the play button is clicked again.
+                    This is an optimization to avoid unnecessary paintings.
+                */
                 break;
             default:
                 drawStartScreen();
@@ -399,7 +408,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY -= birdY_dx;
     }
     
-    canvas.addEventListener("click", onPlayButtonClick);
+    canvas.onclick = onPlayButtonClick;
 
     draw();
 }
