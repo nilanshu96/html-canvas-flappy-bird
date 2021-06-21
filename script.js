@@ -11,7 +11,7 @@ let translateSpeed = 0;
 const pipes = [];
 let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
-const pipeDist = canvas.width - 100*constants.SPRITE_SCALE; //distance between two pipe pairs
+const pipeDist = canvas.width - 101*constants.SPRITE_SCALE; //distance between two pipe pairs
 
 let birdWingsInterval;
 
