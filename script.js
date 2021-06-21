@@ -31,6 +31,7 @@ let birdY = birdYInitial; //y coordinate will change on clicking
 const birdY_dx_initial = Math.floor(canvas.height * 0.1);
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
 let birdGravity = 0 //velocity at which the bird will fall
+const birdGravityInitial = Math.floor(canvas.height * 0.005);
 
 // ground
 const groundCanvasWidth = canvas.width;
@@ -153,7 +154,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         currentState = constants.GAME;
         translateSpeed = 1;
         gameOver = false;
-        birdGravity = Math.floor(canvas.height * 0.005);
+        birdGravity = birdGravityInitial;
         score = 0;
         birdJump();
         birdAnimationHelper();
@@ -343,6 +344,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
 
         birdY += birdGravity;
+        birdGravity += 0.03;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
     }
 
@@ -405,6 +407,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
 
     function birdJump() {
+        birdGravity = birdGravityInitial;
         birdY -= birdY_dx;
     }
     
