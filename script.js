@@ -126,11 +126,13 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         if (mouseCanvasX >= playBtnCanvasX && mouseCanvasX <= playBtnCanvasX + playBtnCanvasWidth) {
             if (currentState === constants.START &&
                 mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
+                //condition for start screen play button
                 currentState = constants.READY;
                 
                 canvas.onclick = initializeGameValues;
             } else if (currentState === constants.FINISH &&
                 mouseCanvasY >= gameOverPlayBtnY && mouseCanvasY <= gameOverPlayBtnY + playBtnCanvasHeight) {
+                //condition for game Over screen play button
                 currentState = constants.READY;
                 resetBirdPos();
                 
@@ -148,8 +150,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY_dx = birdY_dx_initial;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
-        bg_dx = 0;
-        bgCtx.resetTransform();
+        bg_dx = 0; //represents the x position on background canvas as well as x position on the background pattern which is reset to 0
+        bgCtx.resetTransform(); //resets the background canvas matrix to identity matrix as the matrix changes because of translation
         resetBirdPos();
         currentState = constants.GAME;
         translateSpeed = 1;
