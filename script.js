@@ -415,6 +415,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     
     canvas.onclick = onPlayButtonClick;
 
-    draw();
+    requestAnimationFrame(draw);
 }
 
