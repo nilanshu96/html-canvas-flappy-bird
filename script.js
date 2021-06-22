@@ -83,6 +83,10 @@ const gameOverPlayBtnY = gameOverScoreY + Math.floor(canvas.height*0.2);
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
     const bgCtx = backgroundCanvas.getContext('2d');
+
+    ctx.imageSmoothingEnabled = false;
+    bgCtx.imageSmoothingEnabled = false;
+
     const sprite = new Image();
     sprite.src = constants.SPRITE_SRC;
 
@@ -266,6 +270,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     const bgPatternCanvas = getBackgroundPatternCanvas();
     const pattern_ctx = bgPatternCanvas.getContext("2d");
+    pattern_ctx.imageSmoothingEnabled = false;
 
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
