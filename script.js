@@ -171,7 +171,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function initializeGameValues() {
-        pipe_dx = Math.floor(canvas.width * 0.008);
+        pipe_dx = Math.floor(canvas.width * 0.01);
         birdY_dx = birdY_dx_initial;
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
@@ -388,7 +388,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
 
         birdY += birdGravity;
-        birdGravity += 0.03;
+        birdGravity += 0.1;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * scale, birdY);
     }
 
