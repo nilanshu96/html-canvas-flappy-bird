@@ -7,7 +7,6 @@ var scaleX = (window.innerWidth / constants.BG_WIDTH);
 var scaleY = (window.innerHeight / constants.BG_HEIGHT);
 
 const scale = Math.min(scaleX, scaleY);
-console.log(scale);
 
 canvas.width = canvas.width * scale;
 // canvas.width = window.innerWidth;
@@ -23,9 +22,16 @@ let translateSpeed = 0;
 const pipes = [];
 let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
-const pipeDist = canvas.width - 105*scale; //distance between two pipe pairs
+const pipeDist = canvas.width - 105 * scale; //distance between two pipe pairs
+let drawing = false;
 
 let birdWingsInterval;
+
+//animation timing - to control the rate of painting on canvas
+
+let startTime = -1;
+const animationLength = 33;
+let progress = 0;
 
 // Scoring
 let score = 0;
@@ -37,7 +43,7 @@ const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the ene
 // Coordinates and dimension values to be used for positioning and drawing on canvas
 
 // bird
-const birdX = Math.floor(canvas.width*0.2);
+const birdX = Math.floor(canvas.width * 0.2);
 const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * scale / 2);
 let birdY = birdYInitial; //y coordinate will change on clicking
 const birdY_dx_initial = Math.floor(canvas.height * 0.08);
@@ -48,11 +54,9 @@ const birdGravityInitial = Math.floor(canvas.height * 0.005);
 // ground
 const groundCanvasWidth = canvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
-const groundClearance = Math.floor(0.1*canvas.height); //part of ground that would appear on canvas
+const groundClearance = Math.floor(0.1 * canvas.height); //part of ground that would appear on canvas
 const groundCanvasX = 0;
 const groundCanvasY = Math.floor(canvas.height - groundClearance);
-
-console.log(`height: ${canvas.height}, ground: ${groundClearance}`);
 
 // Title text
 const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * scale;
@@ -74,25 +78,25 @@ const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * scale + Math.floor(
 const getReadyCanvasWidth = constants.READY_TEXT_WIDTH * scale;
 const getReadyCanvasHeight = constants.READY_TEXT_HEIGHT * scale;
 const getReadyCanvasX = canvas.width / 2 - getReadyCanvasWidth / 2;
-const getReadyCanvasY = Math.floor(canvas.height*0.2);
+const getReadyCanvasY = Math.floor(canvas.height * 0.2);
 
 // Jump instruction image
 const jumpInstructionCanvasWidth = constants.JUMP_INSTRUCTION_WIDTH * scale;
 const jumpInstructionCanvasHeight = constants.JUMP_INSTRUCTION_HEIGHT * scale;
 const jumpInstructionX = canvas.width / 2 - jumpInstructionCanvasWidth / 2;
-const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + Math.floor(canvas.height*0.1);
+const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + Math.floor(canvas.height * 0.1);
 
 // Game Over Text
 const gameOverWidth = constants.GAME_OVER_WIDTH * scale;
 const gameOverHeight = constants.GAME_OVER_HEIGHT * scale;
 const gameOverX = Math.floor(canvas.width / 2 - gameOverWidth / 2);
-const gameOverY = Math.floor(canvas.height*0.2);
+const gameOverY = Math.floor(canvas.height * 0.2);
 
 // Game over score
 const gameOverScoreY = gameOverY + gameOverHeight + Math.floor(canvas.height * 0.14);
 
 // Game Over Play Button
-const gameOverPlayBtnY = gameOverScoreY + Math.floor(canvas.height*0.2);
+const gameOverPlayBtnY = gameOverScoreY + Math.floor(canvas.height * 0.2);
 
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
@@ -102,7 +106,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         imageSmoothingEnabled determines whether scaled images are smoothed. Default is true.
         Here there is no need of image smoothing as the sprite is pixel art.
     */
-    ctx.imageSmoothingEnabled = false; 
+    ctx.imageSmoothingEnabled = false;
     bgCtx.imageSmoothingEnabled = false;
 
     const sprite = new Image();
@@ -132,10 +136,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale)
     }
 
-    const low = Math.floor(canvas.height/5) - constants.PIPE_HEIGHT * scale;
+    const low = Math.floor(canvas.height / 5) - constants.PIPE_HEIGHT * scale;
     const high = 0;
     function getNewPipePair() {
-        console.log(`low: ${low}, high: ${high}`);
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * scale + pipeGap, crossed: false };
@@ -150,14 +153,14 @@ if (canvas.getContext && backgroundCanvas.getContext) {
                 mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
                 //condition for start screen play button
                 currentState = constants.READY;
-                
+
                 canvas.onclick = initializeGameValues;
             } else if (currentState === constants.FINISH &&
                 mouseCanvasY >= gameOverPlayBtnY && mouseCanvasY <= gameOverPlayBtnY + playBtnCanvasHeight) {
                 //condition for game Over screen play button
                 currentState = constants.READY;
                 resetBirdPos();
-                
+
                 canvas.onclick = initializeGameValues;
             }
         }
@@ -207,15 +210,17 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function drawPipes() {
         for (let i = 0; i < pipes.length; i++) {
             drawPipePair(pipes[i]);
+
             pipes[i].x_up -= pipe_dx;
             pipes[i].x_down -= pipe_dx;
+
         }
     }
 
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
-                if(!gameOver) stopGameValues();
+                if (!gameOver) stopGameValues();
                 break;
             } else if (!pipes[i].crossed && checkPipeCrossed(pipes[i].x_up)) {
                 score++;
@@ -272,7 +277,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //checks the collision between bird and ground
     function checkGroundCollision() {
         if (birdY + constants.BIRD_HEIGHT * scale >= groundCanvasY) {
-            if(!gameOver) stopGameValues();
+            if (!gameOver) stopGameValues();
         }
     }
 
@@ -295,36 +300,48 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
 
 
-    function draw() {
+    function draw(timestamp) {
 
-        switch(currentState) {
-            case constants.START:
-                drawBackground(); 
-                drawStartScreen();
-                break;
-            case constants.READY:
-                drawBackground();
-                drawGetReadyScreen();
-                break;
-            case constants.GAME:
-                drawBackground();
-                drawGame();
-                break;
-            case constants.FINISH:
-                /*
-                    Do nothing here. There would be no repainting on canvas until the play button is clicked again.
-                    This is an optimization to avoid unnecessary paintings.
-                */
-                break;
-            default:
-                drawStartScreen();
+        if (startTime < 0) {
+            startTime = timestamp;
+        } else {
+            progress = timestamp - startTime;
         }
 
+        //This makes sure that drawing happens in almost 30fps
+        if (progress > animationLength) {
+            drawing = true;
+            switch (currentState) {
+                case constants.START:
+                    drawBackground(timestamp);
+                    drawStartScreen();
+                    break;
+                case constants.READY:
+                    drawBackground();
+                    drawGetReadyScreen();
+                    break;
+                case constants.GAME:
+                    drawBackground();
+                    drawGame(timestamp);
+                    break;
+                case constants.FINISH:
+                    /*
+                        Do nothing here. There would be no repainting on canvas until the play button is clicked again.
+                        This is an optimization to avoid unnecessary paintings.
+                    */
+                    break;
+                default:
+                    drawStartScreen();
+            }
+            startTime = timestamp;
+            progress = 0;
+            drawing = false;
+        }
         requestAnimationFrame(draw);
     }
 
     //draws the background for game using the background canvas
-    function drawBackground() {
+    function drawBackground(timestamp) {
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
@@ -335,10 +352,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         //the bg_dx also represents the x starting point from where the pattern would be drawn. Hence the pattern appears moving.
         //the pattern used in fillStyle never moves. fillRect here takes a rectangular part from the pattern from (bg_dx,0) location of pattern of size canvas width and height.
 
+
         bgCtx.translate(-translateSpeed, 0); //here canvas is gradually moving left on x-axis due to the negative translate
         bg_dx += translateSpeed; //bg_dx is added equal to the translate speed because the x origin or the zero point of x axis has moved left by translate speed
         //in simple words the the x origin has moved left of the screen due to negative translate which is not inside the canvas hence not visible anymore
         //therefore we add the translate speed to bg_dx to draw the pattern from the point where the canvas screen starts or the point from where the canvas becomes visible
+
     }
 
     //draws the game in the main canvas
@@ -432,10 +451,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
 
     function birdJump() {
-        birdGravity = birdGravityInitial;
-        birdY -= birdY_dx;
+        if (!drawing) {
+            birdGravity = birdGravityInitial;
+            birdY -= birdY_dx;
+        }
     }
-    
+
     canvas.onclick = onPlayButtonClick;
 
     requestAnimationFrame(draw);
