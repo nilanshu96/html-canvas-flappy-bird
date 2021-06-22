@@ -3,7 +3,19 @@ import * as constants from './modules/constants.mjs';
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
 // const container = document.getElementById('game-container');
+var scaleX = (window.innerWidth / constants.BG_WIDTH);
+var scaleY = (window.innerHeight / constants.BG_HEIGHT);
 
+const scale = Math.min(scaleX, scaleY);
+console.log(scale);
+
+canvas.width = canvas.width * scale;
+// canvas.width = window.innerWidth;
+canvas.height = canvas.height * scale;
+
+backgroundCanvas.width = backgroundCanvas.width * scale;
+// backgroundCanvas.width = window.innerWidth;
+backgroundCanvas.height = backgroundCanvas.height * scale;
 
 let currentState = constants.START;
 
@@ -11,7 +23,7 @@ let translateSpeed = 0;
 const pipes = [];
 let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
-const pipeDist = canvas.width - 101*constants.SPRITE_SCALE; //distance between two pipe pairs
+const pipeDist = canvas.width - 105*scale; //distance between two pipe pairs
 
 let birdWingsInterval;
 
@@ -26,9 +38,9 @@ const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the ene
 
 // bird
 const birdX = Math.floor(canvas.width*0.2);
-const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * constants.SPRITE_SCALE / 2);
+const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * scale / 2);
 let birdY = birdYInitial; //y coordinate will change on clicking
-const birdY_dx_initial = Math.floor(canvas.height * 0.1);
+const birdY_dx_initial = Math.floor(canvas.height * 0.08);
 let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
 let birdGravity = 0 //velocity at which the bird will fall
 const birdGravityInitial = Math.floor(canvas.height * 0.005);
@@ -36,41 +48,43 @@ const birdGravityInitial = Math.floor(canvas.height * 0.005);
 // ground
 const groundCanvasWidth = canvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
-const groundClearance = Math.floor(groundCanvasHeight / 2); //part of ground that would appear on canvas
+const groundClearance = Math.floor(0.1*canvas.height); //part of ground that would appear on canvas
 const groundCanvasX = 0;
-const groundCanvasY = Math.floor(canvas.height - groundCanvasHeight / 2);
+const groundCanvasY = Math.floor(canvas.height - groundClearance);
+
+console.log(`height: ${canvas.height}, ground: ${groundClearance}`);
 
 // Title text
-const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * constants.SPRITE_SCALE;
-const titleCanvasHeight = constants.TITLE_TEXT_HEIGHT * constants.SPRITE_SCALE;
+const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * scale;
+const titleCanvasHeight = constants.TITLE_TEXT_HEIGHT * scale;
 const titleCanvasX = Math.floor(canvas.width / 2 - titleCanvasWidth / 2);
 const titleCanvasY = Math.floor(canvas.height / 4);
 
 // Bird pos on start screen
-const birdCanvasX = Math.floor(canvas.width / 2 - constants.BIRD_WIDTH * constants.SPRITE_SCALE / 2);
+const birdCanvasX = Math.floor(canvas.width / 2 - constants.BIRD_WIDTH * scale / 2);
 const birdCanvasY = titleCanvasY + titleCanvasHeight + Math.floor(canvas.height * 0.06);
 
 // Play button
-const playBtnCanvasWidth = constants.PLAY_BUTTON_WIDTH * constants.SPRITE_SCALE;
-const playBtnCanvasHeight = constants.PLAY_BUTTON_HEIGHT * constants.SPRITE_SCALE;
+const playBtnCanvasWidth = constants.PLAY_BUTTON_WIDTH * scale;
+const playBtnCanvasHeight = constants.PLAY_BUTTON_HEIGHT * scale;
 const playBtnCanvasX = Math.floor(canvas.width / 2 - playBtnCanvasWidth / 2);
-const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE + Math.floor(canvas.height * 0.14);
+const playBtnCanvasY = birdCanvasY + constants.BIRD_HEIGHT * scale + Math.floor(canvas.height * 0.14);
 
 // Get Ready Text
-const getReadyCanvasWidth = constants.READY_TEXT_WIDTH * constants.SPRITE_SCALE;
-const getReadyCanvasHeight = constants.READY_TEXT_HEIGHT * constants.SPRITE_SCALE;
+const getReadyCanvasWidth = constants.READY_TEXT_WIDTH * scale;
+const getReadyCanvasHeight = constants.READY_TEXT_HEIGHT * scale;
 const getReadyCanvasX = canvas.width / 2 - getReadyCanvasWidth / 2;
 const getReadyCanvasY = Math.floor(canvas.height*0.2);
 
 // Jump instruction image
-const jumpInstructionCanvasWidth = constants.JUMP_INSTRUCTION_WIDTH * constants.SPRITE_SCALE;
-const jumpInstructionCanvasHeight = constants.JUMP_INSTRUCTION_HEIGHT * constants.SPRITE_SCALE;
+const jumpInstructionCanvasWidth = constants.JUMP_INSTRUCTION_WIDTH * scale;
+const jumpInstructionCanvasHeight = constants.JUMP_INSTRUCTION_HEIGHT * scale;
 const jumpInstructionX = canvas.width / 2 - jumpInstructionCanvasWidth / 2;
 const jumpInstructionY = getReadyCanvasY + getReadyCanvasHeight + Math.floor(canvas.height*0.1);
 
 // Game Over Text
-const gameOverWidth = constants.GAME_OVER_WIDTH * constants.SPRITE_SCALE;
-const gameOverHeight = constants.GAME_OVER_HEIGHT * constants.SPRITE_SCALE;
+const gameOverWidth = constants.GAME_OVER_WIDTH * scale;
+const gameOverHeight = constants.GAME_OVER_HEIGHT * scale;
 const gameOverX = Math.floor(canvas.width / 2 - gameOverWidth / 2);
 const gameOverY = Math.floor(canvas.height*0.2);
 
@@ -84,7 +98,11 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
     const bgCtx = backgroundCanvas.getContext('2d');
 
-    ctx.imageSmoothingEnabled = false;
+    /*
+        imageSmoothingEnabled determines whether scaled images are smoothed. Default is true.
+        Here there is no need of image smoothing as the sprite is pixel art.
+    */
+    ctx.imageSmoothingEnabled = false; 
     bgCtx.imageSmoothingEnabled = false;
 
     const sprite = new Image();
@@ -106,21 +124,21 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             constants.GREEN_PIPE_UP_X, constants.GREEN_PIPE_UP_Y,
             constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
             x_up, y_up,
-            constants.PIPE_WIDTH * constants.SPRITE_SCALE, constants.PIPE_HEIGHT * constants.SPRITE_SCALE);
+            constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale);
         ctx.drawImage(sprite,
             constants.GREEN_PIPE_DOWN_X, constants.GREEN_PIPE_DOWN_Y,
             constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
             x_down, y_down,
-            constants.PIPE_WIDTH * constants.SPRITE_SCALE, constants.PIPE_HEIGHT * constants.SPRITE_SCALE)
+            constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale)
     }
 
-    const low = Math.floor(canvas.height/5) - constants.PIPE_HEIGHT * constants.SPRITE_SCALE;
+    const low = Math.floor(canvas.height/5) - constants.PIPE_HEIGHT * scale;
     const high = 0;
     function getNewPipePair() {
         console.log(`low: ${low}, high: ${high}`);
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
-        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * constants.SPRITE_SCALE + pipeGap, crossed: false };
+        return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * scale + pipeGap, crossed: false };
     }
 
     function onPlayButtonClick(event) {
@@ -211,7 +229,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             pipes.push(getNewPipePair());
         }
 
-        if (pipes.length > 0 && pipes[0].x_up <= -constants.PIPE_WIDTH * constants.SPRITE_SCALE) {
+        if (pipes.length > 0 && pipes[0].x_up <= -constants.PIPE_WIDTH * scale) {
             pipes.shift();
         }
     }
@@ -228,12 +246,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //A simple collision checker to see if the bird is colliding with a pipe
     function checkCollision(enemy_x, enemy_yup, enemy_ydown) {
 
-        const enemy_yup_bottom = enemy_yup + constants.PIPE_HEIGHT * constants.SPRITE_SCALE;
+        const enemy_yup_bottom = enemy_yup + constants.PIPE_HEIGHT * scale;
 
-        if ((birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE >= enemy_x + hitBoxMargin) &&
-            (birdX <= enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE - hitBoxMargin)) {
+        if ((birdX + constants.BIRD_WIDTH * scale >= enemy_x + hitBoxMargin) &&
+            (birdX <= enemy_x + constants.PIPE_WIDTH * scale - hitBoxMargin)) {
             if ((birdY >= enemy_yup_bottom - hitBoxMargin) &&
-                (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE <= enemy_ydown + hitBoxMargin)) {
+                (birdY + constants.BIRD_HEIGHT * scale <= enemy_ydown + hitBoxMargin)) {
                 return false;
             } else {
                 return true;
@@ -244,8 +262,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function checkPipeCrossed(enemy_x) {
-        if ((birdX < enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE) &&
-            (birdX + constants.BIRD_WIDTH * constants.SPRITE_SCALE > enemy_x + constants.PIPE_WIDTH * constants.SPRITE_SCALE)) {
+        if ((birdX < enemy_x + constants.PIPE_WIDTH * scale) &&
+            (birdX + constants.BIRD_WIDTH * scale > enemy_x + constants.PIPE_WIDTH * scale)) {
             return true;
         }
         return false;
@@ -253,7 +271,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //checks the collision between bird and ground
     function checkGroundCollision() {
-        if (birdY + constants.BIRD_HEIGHT * constants.SPRITE_SCALE >= groundCanvasY) {
+        if (birdY + constants.BIRD_HEIGHT * scale >= groundCanvasY) {
             if(!gameOver) stopGameValues();
         }
     }
@@ -294,7 +312,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
                 break;
             case constants.FINISH:
                 /*
-                    Do nothing here. There would be no repanting on canvas until the play button is clicked again.
+                    Do nothing here. There would be no repainting on canvas until the play button is clicked again.
                     This is an optimization to avoid unnecessary paintings.
                 */
                 break;
@@ -345,14 +363,14 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             bottom of pipes. 
         */
         checkGroundCollision();
-        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
+        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
         managePipes();
         checkGameOver();
         ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
 
         birdY += birdGravity;
         birdGravity += 0.03;
-        birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * constants.SPRITE_SCALE, birdY);
+        birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * scale, birdY);
     }
 
     function drawStartScreen() {
@@ -368,7 +386,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y,
             constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
             birdCanvasX, birdCanvasY,
-            constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
+            constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
 
         ctx.drawImage(sprite,
             constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y,
@@ -392,7 +410,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             jumpInstructionX, jumpInstructionY,
             jumpInstructionCanvasWidth, jumpInstructionCanvasHeight);
 
-        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * constants.SPRITE_SCALE, constants.BIRD_HEIGHT * constants.SPRITE_SCALE);
+        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
     }
 
     function drawGameOverScreen() {
