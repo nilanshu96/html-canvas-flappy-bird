@@ -451,6 +451,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
 
     function birdJump() {
+        //to avoid jump getting executed if there's a delay in drawing frames
         if (!drawing) {
             birdGravity = birdGravityInitial;
             birdY -= birdY_dx;
