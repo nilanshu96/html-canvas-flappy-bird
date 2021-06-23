@@ -71,3 +71,17 @@ export const JUMP_INSTRUCTION_Y = 91;
 export const JUMP_INSTRUCTION_WIDTH = 57;
 export const JUMP_INSTRUCTION_HEIGHT = 49;
 
+/* Numbers 0-9 */
+export const NUMBERS = [
+    {x: 496, y: 60, width: 12, height: 18},     // 0
+    {x: 136, y: 455, width: 8, height: 18},     // 1
+    {x: 292, y: 160, width: 12, height: 18},    // 2
+    {x: 306, y: 160, width: 12, height: 18},    // 3
+    {x: 320, y: 160, width: 12, height: 18},    // 4
+    {x: 334, y: 160, width: 12, height: 18},    // 5
+    {x: 292, y: 184, width: 12, height: 18},    // 6
+    {x: 306, y: 184, width: 12, height: 18},    // 7
+    {x: 320, y: 184, width: 12, height: 18},    // 8
+    {x: 334, y: 184, width: 12, height: 18}     // 9
+]
+

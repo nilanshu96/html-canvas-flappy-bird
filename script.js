@@ -201,10 +201,27 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //draws the current score on screen
     function drawScore(y_pos) {
-        ctx.font = font; //sets the font based on the css font property
-        ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
-        ctx.textAlign = "center"; //aligns text based on the css property
-        ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
+        /* fillText is very expensive compared to drawImage
+            ctx.font = font; //sets the font based on the css font property
+            ctx.fillStyle = "white"; //specifies the color, gradient, or pattern to use inside shapes
+            ctx.textAlign = "center"; //aligns text based on the css property
+            ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
+        */
+
+        const scoreStr = score.toString();
+        const numGap = 1;
+        let numWidth = constants.NUMBERS[scoreStr[0]].width;
+        for(let i=1; i<scoreStr.length; i++) {
+            numWidth += constants.NUMBERS[scoreStr[i]].width + numGap;
+        }
+       
+        let x_pos = canvas.width/2 - numWidth*scale/2; 
+
+        for(let i=0; i<scoreStr.length; i++) {
+            const {x, y ,width, height} = constants.NUMBERS[scoreStr[i]];
+            ctx.drawImage(sprite, x, y, width, height, x_pos, y_pos, width*scale, height*scale);
+            x_pos += numGap*scale + width*scale;
+        }
     }
 
     function drawPipes() {
