@@ -1,22 +1,29 @@
 import * as constants from './modules/constants.mjs';
 
+/*
+    Five layers in the following order:
+    1. background
+    2. pipes
+    3. score
+    4. ground
+    5. canvas - contains the interactive elements
+*/
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
 const pipesCanvas = document.getElementById('pipes-canvas');
 const scoreCanvas = document.getElementById('score-canvas');
 const groundCanvas = document.getElementById('ground-canvas');
-// const container = document.getElementById('game-container');
+
+//scaling to the screen's size
 var scaleX = (window.innerWidth / constants.BG_WIDTH);
 var scaleY = (window.innerHeight / constants.BG_HEIGHT);
 
 const scale = Math.min(scaleX, scaleY);
 
 canvas.width = canvas.width * scale;
-// canvas.width = window.innerWidth;
 canvas.height = canvas.height * scale;
 
 backgroundCanvas.width = backgroundCanvas.width * scale;
-// backgroundCanvas.width = window.innerWidth;
 backgroundCanvas.height = backgroundCanvas.height * scale;
 
 pipesCanvas.width = pipesCanvas.width * scale;
@@ -47,7 +54,7 @@ let progress = 0;
 
 // Scoring
 let score = 0;
-let prevScore = -1;
+let prevScore = -1; //To decided whether the score canvas should repaint or not
 let gameOver = false;
 
 // const font = "bold " + Math.floor(canvas.height * 0.1) + "px" + " Serif";
