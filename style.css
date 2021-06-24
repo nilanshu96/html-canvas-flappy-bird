@@ -13,7 +13,10 @@ main {
 }
 
 #canvas,
-#background-canvas {
+#background-canvas,
+#pipes-canvas,
+#score-canvas,
+#ground-canvas {
   position: absolute;
   right: 0;
   left: 0;

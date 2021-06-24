@@ -2,6 +2,9 @@ import * as constants from './modules/constants.mjs';
 
 const canvas = document.getElementById('canvas'); //main canvas where the actions will take place
 const backgroundCanvas = document.getElementById('background-canvas'); //another canvas because this canvas will be translating with time
+const pipesCanvas = document.getElementById('pipes-canvas');
+const scoreCanvas = document.getElementById('score-canvas');
+const groundCanvas = document.getElementById('ground-canvas');
 // const container = document.getElementById('game-container');
 var scaleX = (window.innerWidth / constants.BG_WIDTH);
 var scaleY = (window.innerHeight / constants.BG_HEIGHT);
@@ -15,6 +18,15 @@ canvas.height = canvas.height * scale;
 backgroundCanvas.width = backgroundCanvas.width * scale;
 // backgroundCanvas.width = window.innerWidth;
 backgroundCanvas.height = backgroundCanvas.height * scale;
+
+pipesCanvas.width = pipesCanvas.width * scale;
+pipesCanvas.height = pipesCanvas.height * scale;
+
+scoreCanvas.width = scoreCanvas.width * scale;
+scoreCanvas.height = scoreCanvas.height * scale;
+
+groundCanvas.width = groundCanvas.width * scale;
+groundCanvas.height = groundCanvas.height * scale;
 
 let currentState = constants.START;
 
@@ -35,9 +47,10 @@ let progress = 0;
 
 // Scoring
 let score = 0;
+let prevScore = -1;
 let gameOver = false;
 
-const font = "bold " + Math.floor(canvas.height * 0.1) + "px" + " Serif";
+// const font = "bold " + Math.floor(canvas.height * 0.1) + "px" + " Serif";
 const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the enemy hit box for better gameplay
 
 // Coordinates and dimension values to be used for positioning and drawing on canvas
@@ -52,11 +65,11 @@ let birdGravity = 0 //velocity at which the bird will fall
 const birdGravityInitial = Math.floor(canvas.height * 0.005);
 
 // ground
-const groundCanvasWidth = canvas.width;
+const groundCanvasWidth = groundCanvas.width;
 const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
-const groundClearance = Math.floor(0.1 * canvas.height); //part of ground that would appear on canvas
+const groundClearance = Math.floor(0.1 * groundCanvas.height); //part of ground that would appear on canvas
 const groundCanvasX = 0;
-const groundCanvasY = Math.floor(canvas.height - groundClearance);
+const groundCanvasY = Math.floor(groundCanvas.height - groundClearance);
 
 // Title text
 const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * scale;
@@ -101,6 +114,9 @@ const gameOverPlayBtnY = gameOverScoreY + Math.floor(canvas.height * 0.2);
 if (canvas.getContext && backgroundCanvas.getContext) {
     const ctx = canvas.getContext('2d');
     const bgCtx = backgroundCanvas.getContext('2d');
+    const pipesCtx = pipesCanvas.getContext('2d');
+    const scoreCtx = scoreCanvas.getContext('2d');
+    const groundCtx = groundCanvas.getContext('2d');
 
     /*
         imageSmoothingEnabled determines whether scaled images are smoothed. Default is true.
@@ -108,6 +124,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     */
     ctx.imageSmoothingEnabled = false;
     bgCtx.imageSmoothingEnabled = false;
+    pipesCtx.imageSmoothingEnabled = false;
+    scoreCtx.imageSmoothingEnabled = false;
+    groundCtx.imageSmoothingEnabled = false;
 
     const sprite = new Image();
     sprite.src = constants.SPRITE_SRC;
@@ -124,12 +143,12 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     function drawPipePair({ x_up, y_up, x_down, y_down }) {
-        ctx.drawImage(sprite,
+        pipesCtx.drawImage(sprite,
             constants.GREEN_PIPE_UP_X, constants.GREEN_PIPE_UP_Y,
             constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
             x_up, y_up,
             constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale);
-        ctx.drawImage(sprite,
+        pipesCtx.drawImage(sprite,
             constants.GREEN_PIPE_DOWN_X, constants.GREEN_PIPE_DOWN_Y,
             constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
             x_down, y_down,
@@ -183,6 +202,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         gameOver = false;
         birdGravity = birdGravityInitial;
         score = 0;
+        prevScore = -1;
         birdJump();
         birdAnimationHelper();
         canvas.onclick = birdJump;
@@ -207,20 +227,20 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             ctx.textAlign = "center"; //aligns text based on the css property
             ctx.fillText(score, canvas.width / 2, y_pos); //text to be drawn, x pos, y pos
         */
-
+        scoreCtx.clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
         const scoreStr = score.toString();
         const numGap = 1;
         let numWidth = constants.NUMBERS[scoreStr[0]].width;
-        for(let i=1; i<scoreStr.length; i++) {
+        for (let i = 1; i < scoreStr.length; i++) {
             numWidth += constants.NUMBERS[scoreStr[i]].width + numGap;
         }
-       
-        let x_pos = canvas.width/2 - numWidth*scale/2; 
 
-        for(let i=0; i<scoreStr.length; i++) {
-            const {x, y ,width, height} = constants.NUMBERS[scoreStr[i]];
-            ctx.drawImage(sprite, x, y, width, height, x_pos, y_pos, width*scale, height*scale);
-            x_pos += numGap*scale + width*scale;
+        let x_pos = canvas.width / 2 - numWidth * scale / 2;
+
+        for (let i = 0; i < scoreStr.length; i++) {
+            const { x, y, width, height } = constants.NUMBERS[scoreStr[i]];
+            scoreCtx.drawImage(sprite, x, y, width, height, x_pos, y_pos, width * scale, height * scale);
+            x_pos += numGap * scale + width * scale;
         }
     }
 
@@ -256,12 +276,16 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    const scoreY = Math.floor(scoreCanvas.height * 0.14);
     function checkGameOver() {
         if (gameOver) {
             drawGameOverScreen();
             currentState = constants.FINISH;
         } else {
-            drawScore(Math.floor(canvas.height * 0.14));
+            if(prevScore !== score) {
+                prevScore = score;
+                drawScore(scoreY);
+            }
         }
     }
 
@@ -315,6 +339,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
 
+    function drawGround() {
+        groundCtx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
+    }
 
 
     function draw(timestamp) {
@@ -380,6 +407,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //draws the game in the main canvas
     function drawGame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pipesCtx.clearRect(0, 0, pipesCanvas.width, pipesCanvas.height);
         /*drawImage params 
             image - png, jpg, canvas etc,
             x_pos_in_img - represents the x position inside the image file from where the drawing would begin
@@ -402,7 +430,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
         managePipes();
         checkGameOver();
-        ctx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
 
         birdY += birdGravity;
         birdGravity += 0.1;
@@ -411,6 +438,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     function drawStartScreen() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
+        drawGround();
 
         ctx.drawImage(sprite,
             constants.TITLE_TEXT_X, constants.TITLE_TEXT_Y,
@@ -433,6 +463,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     function drawGetReadyScreen() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        scoreCtx.clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
+        pipesCtx.clearRect(0, 0, pipesCanvas.width, pipesCanvas.height);
 
         ctx.drawImage(sprite,
             constants.READY_TEXT_X, constants.READY_TEXT_Y,
