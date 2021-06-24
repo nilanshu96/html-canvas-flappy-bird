@@ -392,11 +392,24 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         requestAnimationFrame(draw);
     }
 
+    //initializes the sprites with scaling to avoid scaling during the gameplay
+    function scaledSpritesInit() {
+        //draws ground
+        groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
+        drawGround();
+
+        //creates the background pattern
+        pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
+        pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
+        bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
+        //NOTE: Never create pattern in every frame. Do it rarely or only once as it has extremely high resource usage.
+    }
+
     //draws the background for game using the background canvas
     function drawBackground(timestamp) {
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
-        bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
+        
 
         bgCtx.fillRect(bg_dx, 0, backgroundCanvas.width, backgroundCanvas.height); //stars drawing a rectangle from (bg_dx,0) position of canvas
         //the bg_dx also represents the x starting point from where the pattern would be drawn. Hence the pattern appears moving.
@@ -445,11 +458,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function drawStartScreen() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
-        drawGround();
-        pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
-        pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
-
+        scaledSpritesInit();
 
         ctx.drawImage(sprite,
             constants.TITLE_TEXT_X, constants.TITLE_TEXT_Y,
