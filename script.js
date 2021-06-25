@@ -42,9 +42,13 @@ const pipes = [];
 let pipeGap = Math.floor(canvas.height * 0.2); //gap between top and bottom pipes
 let pipe_dx = 0;
 const pipeDist = canvas.width - 105 * scale; //distance between two pipe pairs
-let drawing = false;
+let drawing = false; //to not allow any onclick actions if items are being painted on screen
 
-let birdWingsInterval;
+let isReadyScreenTextDrawn = false; //To make sure the no interactable items on ready screen are only drawn once
+
+let spritesCacheInitialized = false; //to check if scaled sprites are cached only once during start screen
+
+let birdWingsInterval; //will hold the setTimeInterval to make the bird wings flap
 
 //animation timing - to control the rate of painting on canvas
 
@@ -149,7 +153,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }, 90);
     }
 
-    /* offscreen scaled sprites for caching */
+    /*----- offscreen scaled sprites for caching START -----*/
 
     //Pipe sprites
 
@@ -168,12 +172,39 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     pipeDownCtx.imageSmoothingEnabled = false;
 
     //Bird sprites
+    const redBirdSprites = [];
+
+    //Frame 1
+    const redBird1Canvas = document.createElement('canvas');
+    redBird1Canvas.height = constants.BIRD_HEIGHT * scale;
+    redBird1Canvas.width = constants.BIRD_WIDTH * scale;
+    const redBird1Ctx = redBird1Canvas.getContext('2d');
+    redBird1Ctx.imageSmoothingEnabled = false;
+
+    //Frame 2
+    const redBird2Canvas = document.createElement('canvas');
+    redBird2Canvas.height = constants.BIRD_HEIGHT * scale;
+    redBird2Canvas.width = constants.BIRD_WIDTH * scale;
+    const redBird2Ctx = redBird2Canvas.getContext('2d');
+    redBird2Ctx.imageSmoothingEnabled = false;
+
+    //Frame 3
+    const redBird3Canvas = document.createElement('canvas');
+    redBird3Canvas.height = constants.BIRD_HEIGHT * scale;
+    redBird3Canvas.width = constants.BIRD_WIDTH * scale;
+    const redBird3Ctx = redBird3Canvas.getContext('2d');
+    redBird3Ctx.imageSmoothingEnabled = false;
+
+    redBirdSprites.push(redBird1Canvas, redBird2Canvas, redBird3Canvas);
+
+    /*----- offscreen scaled sprites for caching END -----*/
 
     function drawPipePair({ x_up, y_up, x_down, y_down }) {
         pipesCtx.drawImage(pipeUpCanvas, x_up, y_up);
         pipesCtx.drawImage(pipeDownCanvas, x_down, y_down);
     }
 
+    //produces a new pipe pair with randomized pipe heights
     const low = Math.floor(canvas.height / 5) - constants.PIPE_HEIGHT * scale;
     const high = 0;
     function getNewPipePair() {
@@ -182,6 +213,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         return { x_up: canvas.width, y_up: pipe_up_y, x_down: canvas.width, y_down: pipe_up_y + constants.PIPE_HEIGHT * scale + pipeGap, crossed: false };
     }
 
+    //the onclick listener for the paly button on both start and game over screen
     function onPlayButtonClick(event) {
         const canvasRect = canvas.getBoundingClientRect();
         const mouseCanvasX = event.clientX - canvasRect["left"];
@@ -208,6 +240,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY = birdYInitial;
     }
 
+    // to be called on ready screen to reset game values
     function initializeGameValues() {
         pipe_dx = Math.floor(canvas.width * 0.01);
         birdY_dx = birdY_dx_initial;
@@ -225,6 +258,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdJump();
         birdAnimationHelper();
         canvas.onclick = birdJump;
+        isReadyScreenTextDrawn = false; //Ready screen text is erased as game starts
     }
 
     //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
@@ -263,6 +297,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //draws all the pipes in the pipes array
     function drawPipes() {
         for (let i = 0; i < pipes.length; i++) {
             drawPipePair(pipes[i]);
@@ -273,6 +308,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //checks collision of pipes, creates and removes new and old pipes
     function managePipes() {
         for (let i = 0; i < pipes.length; i++) {
             if (checkCollision(pipes[i].x_up, pipes[i].y_up, pipes[i].y_down)) {
@@ -295,6 +331,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //checks game over condition
     const scoreY = Math.floor(scoreCanvas.height * 0.14);
     function checkGameOver() {
         if (gameOver) {
@@ -326,6 +363,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    //checks if the bird has crossed a pipe pair. Only checks x axis because y axis is taken care by the collision detector.
     function checkPipeCrossed(enemy_x) {
         if ((birdX < enemy_x + constants.PIPE_WIDTH * scale) &&
             (birdX + constants.BIRD_WIDTH * scale > enemy_x + constants.PIPE_WIDTH * scale)) {
@@ -363,6 +401,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
 
+    //draws the game
     function draw(timestamp) {
 
         if (startTime < 0) {
@@ -404,11 +443,13 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         requestAnimationFrame(draw);
     }
 
-    //initializes the sprites with scaling to avoid scaling during the gameplay
+    //initializes the sprites with scaling to avoid scaling during the gameplay. Also draws the ground only once.
     function scaledSpritesInit() {
         //draws ground
         groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
         drawGround();
+
+        console.log('cache initialized');
 
         //creates the background pattern
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
@@ -430,6 +471,28 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             0, 0,
             pipeDownCanvas.width, pipeDownCanvas.height);
 
+        redBird1Ctx.clearRect(0, 0, redBird1Canvas.width, redBird1Canvas.height);
+        redBird1Ctx.drawImage(sprite,
+            constants.RED_BIRD[0].x, constants.RED_BIRD[0].y,
+            constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
+            0, 0,
+            constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+
+        redBird2Ctx.clearRect(0, 0, redBird2Canvas.width, redBird2Canvas.height);
+        redBird2Ctx.drawImage(sprite,
+            constants.RED_BIRD[1].x, constants.RED_BIRD[1].y,
+            constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
+            0, 0,
+            constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+
+        redBird3Ctx.clearRect(0, 0, redBird3Canvas.width, redBird3Canvas.height);
+        redBird3Ctx.drawImage(sprite,
+            constants.RED_BIRD[2].x, constants.RED_BIRD[2].y,
+            constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
+            0, 0,
+            constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+
+        spritesCacheInitialized = true;
     }
 
     //draws the background for game using the background canvas
@@ -473,7 +536,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             bottom of pipes. 
         */
         checkGroundCollision();
-        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+        ctx.drawImage(redBirdSprites[birdFrameCnt], birdX, birdY);
         managePipes();
         checkGameOver();
 
@@ -482,50 +545,67 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * scale, birdY);
     }
 
+    //draws start screen
+    let isStartScreenTextDrawn = false; //to make sure the non interactable items on start screen is only drawn once
     function drawStartScreen() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (isStartScreenTextDrawn) {
+            ctx.clearRect(birdCanvasX, birdCanvasY, redBirdSprites[birdFrameCnt].width, redBirdSprites[birdFrameCnt].height);
+            ctx.drawImage(redBirdSprites[birdFrameCnt], birdCanvasX, birdCanvasY);
 
-        scaledSpritesInit();
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.drawImage(sprite,
-            constants.TITLE_TEXT_X, constants.TITLE_TEXT_Y,
-            constants.TITLE_TEXT_WIDTH, constants.TITLE_TEXT_HEIGHT,
-            titleCanvasX, titleCanvasY,
-            titleCanvasWidth, titleCanvasHeight);
+            if (!spritesCacheInitialized) {
+                scaledSpritesInit();
+            }
 
-        ctx.drawImage(sprite,
-            constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y,
-            constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
-            birdCanvasX, birdCanvasY,
-            constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+            ctx.drawImage(sprite,
+                constants.TITLE_TEXT_X, constants.TITLE_TEXT_Y,
+                constants.TITLE_TEXT_WIDTH, constants.TITLE_TEXT_HEIGHT,
+                titleCanvasX, titleCanvasY,
+                titleCanvasWidth, titleCanvasHeight);
 
-        ctx.drawImage(sprite,
-            constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y,
-            constants.PLAY_BUTTON_WIDTH, constants.PLAY_BUTTON_HEIGHT,
-            playBtnCanvasX, playBtnCanvasY,
-            playBtnCanvasWidth, playBtnCanvasHeight);
+            ctx.drawImage(redBirdSprites[birdFrameCnt], birdCanvasX, birdCanvasY);
+
+            ctx.drawImage(sprite,
+                constants.PLAY_BUTTON_X, constants.PLAY_BUTTON_Y,
+                constants.PLAY_BUTTON_WIDTH, constants.PLAY_BUTTON_HEIGHT,
+                playBtnCanvasX, playBtnCanvasY,
+                playBtnCanvasWidth, playBtnCanvasHeight);
+
+            isStartScreenTextDrawn = true;
+        }
     }
 
+    //draws get Ready Screen
     function drawGetReadyScreen() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        scoreCtx.clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
-        pipesCtx.clearRect(0, 0, pipesCanvas.width, pipesCanvas.height);
+        if (isReadyScreenTextDrawn) {
+            ctx.clearRect(birdX, birdY, redBirdSprites[birdFrameCnt].width, redBirdSprites[birdFrameCnt].height);
+            ctx.drawImage(redBirdSprites[birdFrameCnt], birdX, birdY);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            scoreCtx.clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
+            pipesCtx.clearRect(0, 0, pipesCanvas.width, pipesCanvas.height);
 
-        ctx.drawImage(sprite,
-            constants.READY_TEXT_X, constants.READY_TEXT_Y,
-            constants.READY_TEXT_WIDTH, constants.READY_TEXT_HEIGHT,
-            getReadyCanvasX, getReadyCanvasY,
-            getReadyCanvasWidth, getReadyCanvasHeight);
+            ctx.drawImage(sprite,
+                constants.READY_TEXT_X, constants.READY_TEXT_Y,
+                constants.READY_TEXT_WIDTH, constants.READY_TEXT_HEIGHT,
+                getReadyCanvasX, getReadyCanvasY,
+                getReadyCanvasWidth, getReadyCanvasHeight);
 
-        ctx.drawImage(sprite,
-            constants.JUMP_INSTRUCTION_X, constants.JUMP_INSTRUCTION_Y,
-            constants.JUMP_INSTRUCTION_WIDTH, constants.JUMP_INSTRUCTION_HEIGHT,
-            jumpInstructionX, jumpInstructionY,
-            jumpInstructionCanvasWidth, jumpInstructionCanvasHeight);
+            ctx.drawImage(sprite,
+                constants.JUMP_INSTRUCTION_X, constants.JUMP_INSTRUCTION_Y,
+                constants.JUMP_INSTRUCTION_WIDTH, constants.JUMP_INSTRUCTION_HEIGHT,
+                jumpInstructionX, jumpInstructionY,
+                jumpInstructionCanvasWidth, jumpInstructionCanvasHeight);
 
-        ctx.drawImage(sprite, constants.RED_BIRD[birdFrameCnt].x, constants.RED_BIRD[birdFrameCnt].y, constants.BIRD_WIDTH, constants.BIRD_HEIGHT, birdX, birdY, constants.BIRD_WIDTH * scale, constants.BIRD_HEIGHT * scale);
+            ctx.drawImage(redBirdSprites[birdFrameCnt], birdX, birdY);
+
+            isReadyScreenTextDrawn = true;
+        }
     }
 
+    //draws game over text on main canvas. It is only drawn once because the game state gets changed.
     function drawGameOverScreen() {
 
         ctx.drawImage(sprite,
@@ -543,9 +623,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             playBtnCanvasWidth, playBtnCanvasHeight);
     }
 
-
+    //decreases the y axis position of bird to make it jump
     function birdJump() {
-        //to avoid jump getting executed if there's a delay in drawing frames
         //TODO: smoothen the bird's jump movement
         if (!drawing) {
             birdGravity = birdGravityInitial;
