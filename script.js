@@ -149,17 +149,29 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }, 90);
     }
 
+    /* offscreen scaled sprites for caching */
+
+    //Pipe sprites
+
+    //Pipe up
+    const pipeUpCanvas = document.createElement('canvas');
+    pipeUpCanvas.height = constants.PIPE_HEIGHT * scale;
+    pipeUpCanvas.width = constants.PIPE_WIDTH * scale;
+    const pipeUpCtx = pipeUpCanvas.getContext('2d');
+    pipeUpCtx.imageSmoothingEnabled = false;
+
+    //Pipe down
+    const pipeDownCanvas = document.createElement('canvas');
+    pipeDownCanvas.height = constants.PIPE_HEIGHT * scale;
+    pipeDownCanvas.width = constants.PIPE_WIDTH * scale;
+    const pipeDownCtx = pipeDownCanvas.getContext('2d');
+    pipeDownCtx.imageSmoothingEnabled = false;
+
+    //Bird sprites
+
     function drawPipePair({ x_up, y_up, x_down, y_down }) {
-        pipesCtx.drawImage(sprite,
-            constants.GREEN_PIPE_UP_X, constants.GREEN_PIPE_UP_Y,
-            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
-            x_up, y_up,
-            constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale);
-        pipesCtx.drawImage(sprite,
-            constants.GREEN_PIPE_DOWN_X, constants.GREEN_PIPE_DOWN_Y,
-            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
-            x_down, y_down,
-            constants.PIPE_WIDTH * scale, constants.PIPE_HEIGHT * scale)
+        pipesCtx.drawImage(pipeUpCanvas, x_up, y_up);
+        pipesCtx.drawImage(pipeDownCanvas, x_down, y_down);
     }
 
     const low = Math.floor(canvas.height / 5) - constants.PIPE_HEIGHT * scale;
@@ -289,7 +301,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             drawGameOverScreen();
             currentState = constants.FINISH;
         } else {
-            if(prevScore !== score) {
+            if (prevScore !== score) {
                 prevScore = score;
                 drawScore(scoreY);
             }
@@ -403,13 +415,28 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
         //NOTE: Never create pattern in every frame. Do it rarely or only once as it has extremely high resource usage.
+
+        pipeUpCtx.clearRect(0, 0, pipeUpCanvas.width, pipeUpCanvas.height);
+        pipeUpCtx.drawImage(sprite,
+            constants.GREEN_PIPE_UP_X, constants.GREEN_PIPE_UP_Y,
+            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
+            0, 0,
+            pipeUpCanvas.width, pipeUpCanvas.height);
+
+        pipeDownCtx.clearRect(0, 0, pipeDownCanvas.width, pipeDownCanvas.height);
+        pipeDownCtx.drawImage(sprite,
+            constants.GREEN_PIPE_DOWN_X, constants.GREEN_PIPE_DOWN_Y,
+            constants.PIPE_WIDTH, constants.PIPE_HEIGHT,
+            0, 0,
+            pipeDownCanvas.width, pipeDownCanvas.height);
+
     }
 
     //draws the background for game using the background canvas
     function drawBackground(timestamp) {
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
-        
+
 
         bgCtx.fillRect(bg_dx, 0, backgroundCanvas.width, backgroundCanvas.height); //stars drawing a rectangle from (bg_dx,0) position of canvas
         //the bg_dx also represents the x starting point from where the pattern would be drawn. Hence the pattern appears moving.
