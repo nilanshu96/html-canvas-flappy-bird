@@ -449,8 +449,6 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
         drawGround();
 
-        console.log('cache initialized');
-
         //creates the background pattern
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
