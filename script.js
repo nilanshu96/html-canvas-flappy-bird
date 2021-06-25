@@ -44,7 +44,7 @@ let pipe_dx = 0;
 const pipeDist = canvas.width - 105 * scale; //distance between two pipe pairs
 let drawing = false; //to not allow any onclick actions if items are being painted on screen
 
-let isReadyScreenTextDrawn = false; //To make sure the no interactable items on ready screen are only drawn once
+let isReadyScreenTextDrawn = false; //To make sure the non interactable items on ready screen are only drawn once
 
 let spritesCacheInitialized = false; //to check if scaled sprites are cached only once during start screen
 
@@ -222,9 +222,10 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             if (currentState === constants.START &&
                 mouseCanvasY >= playBtnCanvasY && mouseCanvasY <= playBtnCanvasY + playBtnCanvasHeight) {
                 //condition for start screen play button
-                currentState = constants.READY;
-
-                canvas.onclick = initializeGameValues;
+                if (sprite.complete) { //play button shouldn't do anything until the sprite is loaded
+                    currentState = constants.READY;
+                    canvas.onclick = initializeGameValues;
+                }
             } else if (currentState === constants.FINISH &&
                 mouseCanvasY >= gameOverPlayBtnY && mouseCanvasY <= gameOverPlayBtnY + playBtnCanvasHeight) {
                 //condition for game Over screen play button
@@ -412,7 +413,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
 
         //This makes sure that drawing happens in almost 30fps
-        if (progress > animationLength) {
+        if (progress > animationLength && sprite.complete) { //sprite.complete to make sure sprite gets loaded before any drawing
             drawing = true;
             switch (currentState) {
                 case constants.START:
