@@ -77,10 +77,10 @@ const birdGravityInitial = Math.floor(canvas.height * 0.005);
 
 // ground
 const groundCanvasWidth = groundCanvas.width;
-const groundCanvasHeight = Math.floor((constants.GROUND_HEIGHT / constants.GROUND_WIDTH) * groundCanvasWidth);
+const groundCanvasHeight = constants.GROUND_HEIGHT / constants.GROUND_WIDTH * groundCanvasWidth;
 const groundClearance = Math.floor(0.1 * groundCanvas.height); //part of ground that would appear on canvas
 const groundCanvasX = 0;
-const groundCanvasY = Math.floor(groundCanvas.height - groundClearance);
+const groundCanvasY = groundCanvas.height - groundCanvasHeight;
 
 // Title text
 const titleCanvasWidth = constants.TITLE_TEXT_WIDTH * scale;
@@ -206,7 +206,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //produces a new pipe pair with randomized pipe heights
     const low = Math.floor(canvas.height / 5) - constants.PIPE_HEIGHT * scale;
-    const high = 0;
+    const high = Math.ceil(-canvas.height/5);
     function getNewPipePair() {
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
@@ -249,6 +249,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         pipes.push(getNewPipePair());
         bg_dx = 0; //represents the x position on background canvas as well as x position on the background pattern which is reset to 0
         bgCtx.resetTransform(); //resets the background canvas matrix to identity matrix as the matrix changes because of translation
+        ground_dx = groundCanvasX;
+        groundCtx.resetTransform();
+        groundCtx.translate(0, groundCanvasY); //translate/moves the ground canvas on Y axis with it's y origin now being groundCanvasY
         resetBirdPos();
         currentState = constants.GAME;
         translateSpeed = 1;
@@ -380,6 +383,19 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         }
     }
 
+    // Canvas to create the ground image using sprite
+    // This canvas will later be used by groundCanvas as an image for creating a repeating ground pattern
+    function getGroundPatternCanvas() {
+        const pattern_canvas = document.createElement('canvas');
+        pattern_canvas.height = groundCanvasHeight;
+        pattern_canvas.width = groundCanvasWidth;
+        return pattern_canvas;
+    }
+
+    const groundPatternCanvas = getGroundPatternCanvas();
+    const groundPatternCtx = groundPatternCanvas.getContext('2d');
+    groundPatternCtx.imageSmoothingEnabled = false;
+
 
     // Canvas to create the background image using sprite
     // This canvas will later be used by backgroundCanvas as an image for creating a repeating background pattern
@@ -396,10 +412,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
-
-    function drawGround() {
-        groundCtx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, groundCanvasX, groundCanvasY, groundCanvasWidth, groundCanvasHeight);
-    }
+    let ground_dx = 0;
+    
 
 
     //draws the game
@@ -417,16 +431,19 @@ if (canvas.getContext && backgroundCanvas.getContext) {
             drawing = true;
             switch (currentState) {
                 case constants.START:
-                    drawBackground(timestamp);
+                    drawBackground();
                     drawStartScreen();
+                    drawGround();
                     break;
                 case constants.READY:
                     drawBackground();
                     drawGetReadyScreen();
+                    drawGround();
                     break;
                 case constants.GAME:
                     drawBackground();
                     drawGame(timestamp);
+                    drawGround();
                     break;
                 case constants.FINISH:
                     /*
@@ -435,7 +452,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
                     */
                     break;
                 default:
+                    drawBackground();
                     drawStartScreen();
+                    drawGround();
             }
             startTime = timestamp;
             progress = 0;
@@ -446,15 +465,19 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //initializes the sprites with scaling to avoid scaling during the gameplay. Also draws the ground only once.
     function scaledSpritesInit() {
-        //draws ground
-        groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
-        drawGround();
-
+        
         //creates the background pattern
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         bgCtx.fillStyle = bgCtx.createPattern(bgPatternCanvas, "repeat-x"); //creates a repeating pattern on x axis using the bgPatternCanvas
         //NOTE: Never create pattern in every frame. Do it rarely or only once as it has extremely high resource usage.
+
+        //creates the ground pattern
+        groundPatternCtx.clearRect(0, 0, groundPatternCanvas.width, groundPatternCanvas.height);
+        groundPatternCtx.drawImage(sprite, constants.GROUND_X, constants.GROUND_Y, constants.GROUND_WIDTH, constants.GROUND_HEIGHT, 0, 0, groundPatternCanvas.width, groundPatternCanvas.height);
+        groundCtx.fillStyle = groundCtx.createPattern(groundPatternCanvas, "repeat-x");
+        groundCtx.translate(0, groundCanvasY); //the Y translate is here because the pattern needs to be painted from 0,0
+        //Hence the ground canvas gets translated in Y axis 
 
         pipeUpCtx.clearRect(0, 0, pipeUpCanvas.width, pipeUpCanvas.height);
         pipeUpCtx.drawImage(sprite,
@@ -495,7 +518,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     }
 
     //draws the background for game using the background canvas
-    function drawBackground(timestamp) {
+    function drawBackground() {
         bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
 
@@ -510,6 +533,15 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         //in simple words the the x origin has moved left of the screen due to negative translate which is not inside the canvas hence not visible anymore
         //therefore we add the translate speed to bg_dx to draw the pattern from the point where the canvas screen starts or the point from where the canvas becomes visible
 
+    }
+
+    function drawGround() {
+
+        groundCtx.clearRect(0, 0, groundCanvas.width, groundCanvas.height);
+        groundCtx.fillRect(ground_dx, 0, groundCanvasWidth, groundCanvasHeight);
+
+        groundCtx.translate(-pipe_dx, 0);
+        ground_dx += pipe_dx;
     }
 
     //draws the game in the main canvas
