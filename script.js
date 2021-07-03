@@ -73,7 +73,9 @@ let birdY = birdYInitial; //y coordinate will change on clicking
 let birdVelocity = 0 //velocity at which the bird will fall
 const birdVelocityInitial = 0;
 const birdGravity = 0.2;
-const birdJumpVelocity = 2;
+const birdJumpVelocity = 3;
+
+console.log(Math.floor(canvas.height * 0.08));
 
 // ground
 const groundCanvasWidth = groundCanvas.width;
