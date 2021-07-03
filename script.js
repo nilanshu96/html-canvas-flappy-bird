@@ -70,10 +70,10 @@ const hitBoxMargin = Math.floor(canvas.width * 0.03); //used to decrease the ene
 const birdX = Math.floor(canvas.width * 0.2);
 const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * scale / 2);
 let birdY = birdYInitial; //y coordinate will change on clicking
-const birdY_dx_initial = Math.floor(canvas.height * 0.08);
-let birdY_dx = 0; //distance in Y axis by which bird coordinate will change
-let birdGravity = 0 //velocity at which the bird will fall
-const birdGravityInitial = Math.floor(canvas.height * 0.005);
+let birdVelocity = 0 //velocity at which the bird will fall
+const birdVelocityInitial = 0;
+const birdGravity = 0.2;
+const birdJumpVelocity = 2;
 
 // ground
 const groundCanvasWidth = groundCanvas.width;
@@ -244,7 +244,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     // to be called on ready screen to reset game values
     function initializeGameValues() {
         pipe_dx = Math.floor(canvas.width * 0.01);
-        birdY_dx = birdY_dx_initial;
+        
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
         bg_dx = 0; //represents the x position on background canvas as well as x position on the background pattern which is reset to 0
@@ -256,7 +256,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         currentState = constants.GAME;
         translateSpeed = 1;
         gameOver = false;
-        birdGravity = birdGravityInitial;
+        birdVelocity = birdVelocityInitial;
         score = 0;
         prevScore = -1;
         birdJump();
@@ -268,10 +268,9 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     //this functions stops all kind of movements happening on canvas by changing their rate of change to 0
     function stopGameValues() {
         pipe_dx = 0;
-        birdY_dx = 0;
         translateSpeed = 0;
         gameOver = true;
-        birdGravity = 0;
+        birdVelocity = 0;
         canvas.onclick = onPlayButtonClick;
         clearInterval(birdWingsInterval);
     }
@@ -571,8 +570,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
         managePipes();
         checkGameOver();
 
-        birdY += birdGravity;
-        birdGravity += 0.1;
+        birdY += birdVelocity;
+        birdVelocity += birdGravity;
         birdY = Math.min(canvas.height - groundClearance - constants.BIRD_HEIGHT * scale, birdY);
     }
 
@@ -658,8 +657,8 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdJump() {
         //TODO: smoothen the bird's jump movement
         if (!drawing) {
-            birdGravity = birdGravityInitial;
-            birdY -= birdY_dx;
+            birdVelocity -= birdJumpVelocity;
+            birdVelocity = Math.min(-birdJumpVelocity, birdVelocity);
         }
     }
 
