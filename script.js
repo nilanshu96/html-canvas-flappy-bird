@@ -72,10 +72,9 @@ const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * scal
 let birdY = birdYInitial; //y coordinate will change on clicking
 let birdVelocity = 0 //velocity at which the bird will fall
 const birdVelocityInitial = 0;
-const birdGravity = 0.2;
-const birdJumpVelocity = 3;
-
-console.log(Math.floor(canvas.height * 0.08));
+const birdGravity = canvas.height/1000;
+const maxJumpHeight = canvas.height * 0.08;
+const birdJumpVelocity = Math.floor(Math.sqrt(maxJumpHeight * 2 * birdGravity));
 
 // ground
 const groundCanvasWidth = groundCanvas.width;
@@ -659,8 +658,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     function birdJump() {
         //TODO: smoothen the bird's jump movement
         if (!drawing) {
-            birdVelocity -= birdJumpVelocity;
-            birdVelocity = Math.min(-birdJumpVelocity, birdVelocity);
+            birdVelocity = -birdJumpVelocity;
         }
     }
 
