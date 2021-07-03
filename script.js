@@ -74,7 +74,7 @@ let birdVelocity = 0 //velocity at which the bird will fall
 const birdVelocityInitial = 0;
 const birdGravity = canvas.height/1000;
 const maxJumpHeight = canvas.height * 0.08;
-const birdJumpVelocity = Math.floor(Math.sqrt(maxJumpHeight * 2 * birdGravity));
+const birdJumpVelocity = Math.floor(Math.sqrt(maxJumpHeight * 2 * birdGravity)); // using Hmax = U^2/2*gravity. U = initial velocity, Hmax = Max height reachable
 
 // ground
 const groundCanvasWidth = groundCanvas.width;
