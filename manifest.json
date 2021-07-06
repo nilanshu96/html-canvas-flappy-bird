@@ -2,7 +2,7 @@
   "name": "Flappy Bird",
   "short_name": "Flappy Bird",
   "start_url": ".",
-  "display": "fullscreen",
+  "display": "standalone",
   "description": "Clone of the Original Flappy Bird",
   "orientation": "portrait",
   "icons": [

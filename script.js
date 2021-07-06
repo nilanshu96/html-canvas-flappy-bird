@@ -31,9 +31,15 @@ const pipesCanvas = document.getElementById('pipes-canvas');
 const scoreCanvas = document.getElementById('score-canvas');
 const groundCanvas = document.getElementById('ground-canvas');
 
+// Using the main element to get the 100vh for the canvas
+const main = document.querySelector('main');
+
+let windowHeight = main.clientHeight;
+let windowWidth = main.clientWidth;
+
 //scaling to the screen's size
-var scaleX = (window.innerWidth / constants.BG_WIDTH);
-var scaleY = (window.innerHeight / constants.BG_HEIGHT);
+var scaleX = (windowWidth/ constants.BG_WIDTH);
+var scaleY = (windowHeight / constants.BG_HEIGHT);
 
 const scale = Math.min(scaleX, scaleY);
 
