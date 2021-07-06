@@ -1,5 +1,20 @@
 import * as constants from './modules/constants.mjs';
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+        .then(function (reg) {
+            if (reg.installing) {
+                console.log('service worker is installing');
+            } else if (reg.waiting) {
+                console.log('service worker has installed');
+            } else if (reg.active) {
+                console.log('service worker is active');
+            }
+        }).catch(function(err) {
+            console.log('registration failed with ' + err);
+        })
+}
+
 /*
     Five layers in the following order:
     1. background
@@ -72,7 +87,7 @@ const birdYInitial = Math.floor(canvas.height / 2 - constants.BIRD_HEIGHT * scal
 let birdY = birdYInitial; //y coordinate will change on clicking
 let birdVelocity = 0 //velocity at which the bird will fall
 const birdVelocityInitial = 0;
-const birdGravity = canvas.height/1000;
+const birdGravity = canvas.height / 1000;
 const maxJumpHeight = canvas.height * 0.08;
 const birdJumpVelocity = Math.floor(Math.sqrt(maxJumpHeight * 2 * birdGravity)); // using Hmax = U^2/2*gravity. U = initial velocity, Hmax = Max height reachable
 
@@ -207,7 +222,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //produces a new pipe pair with randomized pipe heights
     const low = Math.floor(canvas.height / 5) - constants.PIPE_HEIGHT * scale;
-    const high = Math.ceil(-canvas.height/5);
+    const high = Math.ceil(-canvas.height / 5);
     function getNewPipePair() {
         const pipe_up_y = Math.floor(Math.random() * (high - low) + low);
 
@@ -245,7 +260,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     // to be called on ready screen to reset game values
     function initializeGameValues() {
         pipe_dx = Math.floor(canvas.width * 0.01);
-        
+
         pipes.splice(0, pipes.length); //clear the pipes
         pipes.push(getNewPipePair());
         bg_dx = 0; //represents the x position on background canvas as well as x position on the background pattern which is reset to 0
@@ -413,7 +428,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
     birdAnimationHelper();
     let bg_dx = 0; //used for translating the background on x axis
     let ground_dx = 0;
-    
+
 
 
     //draws the game
@@ -465,7 +480,7 @@ if (canvas.getContext && backgroundCanvas.getContext) {
 
     //initializes the sprites with scaling to avoid scaling during the gameplay. Also draws the ground only once.
     function scaledSpritesInit() {
-        
+
         //creates the background pattern
         pattern_ctx.clearRect(0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
         pattern_ctx.drawImage(sprite, constants.BG_DAY_X, constants.BG_DAY_Y, constants.BG_WIDTH, constants.BG_HEIGHT, 0, 0, bgPatternCanvas.width, bgPatternCanvas.height);
