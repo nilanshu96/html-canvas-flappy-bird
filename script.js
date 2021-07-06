@@ -10,10 +10,12 @@ if ('serviceWorker' in navigator) {
             } else if (reg.active) {
                 console.log('service worker is active');
             }
-        }).catch(function(err) {
+        }).catch(function (err) {
             console.log('registration failed with ' + err);
         })
 }
+
+window.onresize = function () { window.location.reload(); };
 
 /*
     Five layers in the following order:
