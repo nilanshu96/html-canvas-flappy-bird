@@ -1,5 +1,6 @@
 const CACHE_NAME = "v1";
 
+//installs the service worker which then saves the files used by the game into the cache
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
@@ -23,6 +24,7 @@ self.addEventListener('install', event => {
     )
 });
 
+//The service worker listens to all the fetch calls and returns the files if they're present in cache or fetches it from repository
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request).then(resp => {
@@ -37,7 +39,7 @@ self.addEventListener('fetch', event => {
     )
 });
 
-
+//Following cleans up old cache in case if there's any upgrade in the app
 self.addEventListener('activate', event => {
     const whiteList = [CACHE_NAME];
     event.waitUntil(
